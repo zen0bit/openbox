@@ -1,6 +1,6 @@
 # What is this?
 
-This is a fork of Openbox window manager (http://openbox.org) with the goal of adding more for dynamic content functionality to the Openbox menu. Though Openbox already supports pipe menus, this fork aims to extend that idea to seperator and button labels themselves.
+This is a fork of Openbox window manager (http://openbox.org) with the goal of adding more for dynamic content functionality to the Openbox menu. Though Openbox already supports pipe menus, this fork aims to extend that idea to separator, menu and action labels.
 
 # How does it work?
 
