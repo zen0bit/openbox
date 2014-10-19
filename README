@@ -1,23 +1,17 @@
-Openbox
-Copyright (C) 2004  Mikael Magnusson
-Copyright (C) 2002  Dana Jansens
+# What is this?
 
-----
+This is a fork of Openbox window manager (http://openbox.org) with the goal of adding more for dynamic content functionality to the Openbox menu. Though Openbox already supports pipe menus, this fork aims to extend that idea to seperator and button labels themselves.
 
-    This software is OSI Certified Open Source Software.
-    OSI Certified is a certification mark of the Open Source Initiative.
+# How does it work?
 
-----
+Currently only separator labels are currently supported (as prrof of concept). You can make use of them by adding a `lexecute` attribute to the `separator` in your menu.xml file. The contents of the `lexecute` attribute should be a shell command or location of a bash script (just like pipe menus).
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+For example, this:
+```
+<separator label="Time" lexecute="date +%T" \>
+```
+will create a separator menu entry containing the current time.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    See the COPYING file for a copy of the GNU General Public License.
-
+# Further Development
+- Extend support to include menu and action labels, not only separators.
+- Add support to periodic updating of label text (e.g. system monitor info that updates while the menu is open).
