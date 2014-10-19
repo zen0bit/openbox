@@ -322,12 +322,19 @@ static void parse_menu_separator(xmlNodePtr node, gpointer data)
 
     if (state->parent) {
         gchar *label;
+        gchar *lexecute;
+
 
         if (!obt_xml_attr_string_unstripped(node, "label", &label))
             label = NULL;
 
-        menu_add_separator(state->parent, -1, label);
+        if (!obt_xml_attr_string_unstripped(node, "lexecute", &lexecute))
+            lexecute = NULL;
+
+        //menu_add_separator(state->parent, -1, label);
+        menu_add_separator(state->parent, -1, label, lexecute);
         g_free(label);
+        g_free(lexecute);
     }
 }
 
@@ -534,7 +541,9 @@ static ObMenuEntry* menu_entry_new(ObMenu *menu, ObMenuEntryType type, gint id)
         self->data.normal.enabled = TRUE;
         break;
     case OB_MENU_ENTRY_TYPE_SUBMENU:
+        break;
     case OB_MENU_ENTRY_TYPE_SEPARATOR:
+        self->data.separator.label = g_new0(ObLabelAttribute, 1);
         break;
     }
 
@@ -566,6 +575,9 @@ void menu_entry_unref(ObMenuEntry *self)
             g_free(self->data.submenu.name);
             break;
         case OB_MENU_ENTRY_TYPE_SEPARATOR:
+            //g_free(self->data.separator.label);
+            g_free(self->data.separator.label->label);
+            g_free(self->data.separator.label->lexecute);
             g_free(self->data.separator.label);
             break;
         }
@@ -610,7 +622,7 @@ ObMenuEntry* menu_add_normal(ObMenu *self, gint id, const gchar *label,
     e = menu_entry_new(self, OB_MENU_ENTRY_TYPE_NORMAL, id);
     e->data.normal.actions = actions;
 
-    menu_entry_set_label(e, label, allow_shortcut);
+    menu_entry_set_label(e, label, NULL, allow_shortcut);
 
     self->entries = g_list_append(self->entries, e);
     self->more_menu->entries = self->entries; /* keep it in sync */
@@ -640,13 +652,14 @@ ObMenuEntry* menu_add_submenu(ObMenu *self, gint id, const gchar *submenu)
     return e;
 }
 
-ObMenuEntry* menu_add_separator(ObMenu *self, gint id, const gchar *label)
+ObMenuEntry* menu_add_separator(ObMenu *self, gint id, const gchar *label,
+                                const gchar *lexecute)
 {
     ObMenuEntry *e;
 
     e = menu_entry_new(self, OB_MENU_ENTRY_TYPE_SEPARATOR, id);
 
-    menu_entry_set_label(e, label, FALSE);
+    menu_entry_set_label(e, label, lexecute, FALSE);
 
     self->entries = g_list_append(self->entries, e);
     self->more_menu->entries = self->entries; /* keep it in sync */
@@ -718,12 +731,16 @@ void menu_find_submenus(ObMenu *self)
 }
 
 void menu_entry_set_label(ObMenuEntry *self, const gchar *label,
-                          gboolean allow_shortcut)
+                          const gchar *lexecute, gboolean allow_shortcut)
 {
     switch (self->type) {
     case OB_MENU_ENTRY_TYPE_SEPARATOR:
-        g_free(self->data.separator.label);
-        self->data.separator.label = g_strdup(label);
+        //g_free(self->data.separator.label);
+        //self->data.separator.label = g_strdup(label);
+        g_free(self->data.separator.label->label);
+        g_free(self->data.separator.label->lexecute);
+        self->data.separator.label->label = g_strdup(label);
+        self->data.separator.label->lexecute = g_strdup(lexecute);
         break;
     case OB_MENU_ENTRY_TYPE_NORMAL:
         g_free(self->data.normal.label);
@@ -809,4 +826,38 @@ void menu_sort_entries(ObMenu *self)
         last = it;
     }
     sort_range(self, start, last, len);
+}
+
+void menu_entry_label_execute(ObMenuEntry *self)
+{
+    gchar *output;
+    GError *err = NULL;
+
+    if (self->type != OB_MENU_ENTRY_TYPE_SEPARATOR)
+        return;
+    if (!self->data.separator.label)
+        return;
+    if (!self->data.separator.label->lexecute)
+        return;
+
+    if (!g_spawn_command_line_sync(self->data.separator.label->lexecute,
+                                   &output, NULL, NULL, &err)) {
+        g_message(_("Failed to execute command \"%s\" for label \"%s\": %s"),
+                  self->data.separator.label->lexecute,
+                  self->data.separator.label->label, err->message);
+        g_error_free(err);
+        return;
+    }
+
+    /* strip the LF char from the end of the output string */
+    if (strlen(output))
+        output[strlen(output) - 1] = '\0';
+
+    g_free(self->data.separator.label->label);
+    if (strlen(output))
+        self->data.separator.label->label = g_strdup(output);
+    else
+        self->data.separator.label->label = NULL;
+
+    g_free(output);
 }

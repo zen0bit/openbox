@@ -55,7 +55,7 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
         gboolean empty = TRUE;
         gboolean onlyiconic = TRUE;
 
-        menu_add_separator(menu, SEPARATOR, screen_desktop_names[desktop]);
+        menu_add_separator(menu, SEPARATOR, screen_desktop_names[desktop], NULL);
         for (it = focus_order; it; it = g_list_next(it)) {
             ObClient *c = it->data;
             if (focus_valid_target(c, desktop,
@@ -88,7 +88,7 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
             /* no entries or only iconified windows, so add a
              * way to go to this desktop without uniconifying a window */
             if (!empty)
-                menu_add_separator(menu, SEPARATOR, NULL);
+                menu_add_separator(menu, SEPARATOR, NULL, NULL);
 
             e = menu_add_normal(menu, desktop, _("Go there..."), NULL, TRUE);
             if (desktop == screen_desktop)
@@ -97,7 +97,7 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
     }
 
     if (config_menu_manage_desktops) {
-        menu_add_separator(menu, SEPARATOR, _("Manage desktops"));
+        menu_add_separator(menu, SEPARATOR, _("Manage desktops"), NULL);
         menu_add_normal(menu, ADD_DESKTOP, _("_Add new desktop"), NULL, TRUE);
         menu_add_normal(menu, REMOVE_DESKTOP, _("_Remove last desktop"),
                         NULL, TRUE);

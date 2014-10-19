@@ -253,7 +253,7 @@ static gboolean send_to_menu_update(ObMenuFrame *frame, gpointer data)
             guint desk;
 
             if (i == screen_num_desktops) {
-                menu_add_separator(menu, -1, NULL);
+                menu_add_separator(menu, -1, NULL, NULL);
 
                 desk = DESKTOP_ALL;
                 name = _("All desktops");
@@ -413,7 +413,7 @@ void client_menu_startup(void)
 
     menu_add_normal(menu, CLIENT_DECORATE, _("Un/_Decorate"), NULL, TRUE);
 
-    menu_add_separator(menu, -1, NULL);
+    menu_add_separator(menu, -1, NULL, NULL);
 
     e = menu_add_normal(menu, CLIENT_CLOSE, _("_Close"), NULL, TRUE);
     e->data.normal.mask = ob_rr_theme->btn_close->mask;

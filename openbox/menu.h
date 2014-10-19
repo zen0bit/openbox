@@ -34,6 +34,8 @@ typedef struct _ObMenuEntry ObMenuEntry;
 typedef struct _ObNormalMenuEntry ObNormalMenuEntry;
 typedef struct _ObSubmenuMenuEntry ObSubmenuMenuEntry;
 typedef struct _ObSeparatorMenuEntry ObSeparatorMenuEntry;
+typedef struct _ObLabelAttribute ObLabelAttribute;
+
 
 typedef void (*ObMenuShowFunc)(struct _ObMenuFrame *frame, gpointer data);
 typedef void (*ObMenuHideFunc)(struct _ObMenuFrame *frame, gpointer data);
@@ -145,7 +147,8 @@ struct _ObSubmenuMenuEntry {
 };
 
 struct _ObSeparatorMenuEntry {
-    gchar *label;
+    //gchar *label;
+    ObLabelAttribute *label;
 };
 
 struct _ObMenuEntry
@@ -162,6 +165,12 @@ struct _ObMenuEntry
         ObSubmenuMenuEntry submenu;
         ObSeparatorMenuEntry separator;
     } data;
+};
+
+struct _ObLabelAttribute
+{
+    gchar *label;
+    gchar *lexecute;
 };
 
 void menu_startup(gboolean reconfig);
@@ -211,7 +220,8 @@ void menu_set_place_func(ObMenu *menu, ObMenuPlaceFunc func);
 ObMenuEntry* menu_add_normal(ObMenu *menu, gint id, const gchar *label,
                              GSList *actions, gboolean allow_shortcut);
 ObMenuEntry* menu_add_submenu(ObMenu *menu, gint id, const gchar *submenu);
-ObMenuEntry* menu_add_separator(ObMenu *menu, gint id, const gchar *label);
+ObMenuEntry* menu_add_separator(ObMenu *menu, gint id, const gchar *label,
+                                const gchar *lexecute);
 
 /*! This sorts groups of menu entries between consecutive separators */
 void menu_sort_entries(ObMenu *self);
@@ -220,7 +230,7 @@ void menu_clear_entries(ObMenu *self);
 void menu_entry_remove(ObMenuEntry *self);
 
 void menu_entry_set_label(ObMenuEntry *self, const gchar *label,
-                          gboolean allow_shortcut);
+                          const gchar *lexecute, gboolean allow_shortcut);
 
 ObMenuEntry* menu_find_entry_id(ObMenu *self, gint id);
 
@@ -228,5 +238,8 @@ ObMenuEntry* menu_find_entry_id(ObMenu *self, gint id);
 void menu_find_submenus(ObMenu *self);
 
 ObMenuEntry* menu_get_more(ObMenu *menu, guint show_from);
+
+/* execute a menu entry's label's command, if set */
+void menu_entry_label_execute(ObMenuEntry *self);
 
 #endif

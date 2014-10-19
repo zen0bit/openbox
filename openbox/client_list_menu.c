@@ -85,7 +85,7 @@ static gboolean desk_menu_update(ObMenuFrame *frame, gpointer data)
         /* no entries or only iconified windows, so add a
          * way to go to this desktop without uniconifying a window */
         if (!empty)
-            menu_add_separator(menu, SEPARATOR, NULL);
+            menu_add_separator(menu, SEPARATOR, NULL, NULL);
 
         e = menu_add_normal(menu, d->desktop, _("Go there..."), NULL, TRUE);
         if (d->desktop == screen_desktop)
@@ -162,7 +162,7 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
     }
 
     if (config_menu_manage_desktops) {
-        menu_add_separator(menu, SEPARATOR, NULL);
+        menu_add_separator(menu, SEPARATOR, NULL, NULL);
         menu_add_normal(menu, ADD_DESKTOP, _("_Add new desktop"), NULL, TRUE);
         menu_add_normal(menu, REMOVE_DESKTOP, _("_Remove last desktop"),
                         NULL, TRUE);
