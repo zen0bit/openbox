@@ -4,7 +4,7 @@ This is a fork of Openbox window manager (http://openbox.org) with the goal of a
 
 # How does it work?
 
-Currently only separator labels are supported (as a proof of concept). You can make use of them by adding a `lexecute` attribute to the `separator` in your menu.xml file. The value of the `lexecute` attribute should be a shell command or location of a script file (just like pipe menus).
+Currently only separator labels are supported (as a proof of concept). You can make use of them by adding a `lexecute` attribute to the `separator` tag in your menu.xml file. The value of the `lexecute` attribute should be a shell command or location of a script file (just like pipe menus).
 
 For example, defining a separator like this:
 ```
