@@ -1,5 +1,5 @@
 # What is this?
-This is a fork of Openbox window manager (http://openbox.org) with the goal of adding more for dynamic content functionality to the Openbox menu. Though Openbox already supports pipe menus, this fork aims to extend that idea to separator, submenu and action labels.
+This is a fork of the Openbox window manager (http://openbox.org) with the goal of adding more dynamic content functionality to the Openbox menu. Though Openbox already supports pipe menus, this fork aims to extend that idea to separator, submenu and action labels.
 
 # How does it work?
 Simply add a `lexecute` attribute to any tag in your menu.xml file that usually has a `label` tag. The value of the `lexecute` attribute should be a shell command or location of a script file (just like pipe menus).
