@@ -458,7 +458,11 @@ static void menu_destroy_hash_value(ObMenu *self)
     g_free(self->label);
     g_free(self->collate_key);
     g_free(self->execute);
-    g_slice_free(ObMenu, self->more_menu);  // mem leak??
+    
+    g_free(self->more_menu->label->text);
+    g_free(self->more_menu->label->lexecute);
+    g_free(self->more_menu->label);
+    g_slice_free(ObMenu, self->more_menu);
 
     g_slice_free(ObMenu, self);
 }
