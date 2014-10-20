@@ -402,7 +402,7 @@ ObMenu* menu_new(const gchar *name, const gchar *label, const gchar* lexecute,
     ObMenu *self;
 
     self = g_slice_new0(ObMenu);
-    self->label = g_new0(ObLabel, 1);
+    self->label = g_slice_new0(ObLabel);
     self->name = g_strdup(name);
     self->data = data;
 
@@ -424,7 +424,7 @@ ObMenu* menu_new(const gchar *name, const gchar *label, const gchar* lexecute,
        more_menu->more_menu will always be NULL, since there is only 1 for
        each menu. */
     self->more_menu = g_slice_new0(ObMenu);
-    self->more_menu->label = g_new0(ObLabel, 1);
+    self->more_menu->label = g_slice_new0(ObLabel);
     self->more_menu->name = _("More...");
     self->more_menu->label->text = _("More...");
     self->more_menu->collate_key = "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff";
@@ -453,15 +453,23 @@ static void menu_destroy_hash_value(ObMenu *self)
 
     menu_clear_entries(self);
     g_free(self->name);
-    g_free(self->label->text);
-    g_free(self->label->lexecute);
-    g_free(self->label);
     g_free(self->collate_key);
     g_free(self->execute);
+    if (self->label) {
+        g_free(self->label->text);
+        g_free(self->label->lexecute);
+    }
+    g_slice_free(ObLabel, self->label);
+
     
-    g_free(self->more_menu->label->text);
-    g_free(self->more_menu->label->lexecute);
-    g_free(self->more_menu->label);
+    // Why does this code crash the program?
+    /*
+    if (self->more_menu && self->more_menu->label) {
+        g_free(self->more_menu->label->text);
+        g_free(self->more_menu->label->lexecute);
+        g_slice_free(ObLabel, self->more_menu->label);
+    }
+    */
     g_slice_free(ObMenu, self->more_menu);
 
     g_slice_free(ObMenu, self);
@@ -546,7 +554,7 @@ static ObMenuEntry* menu_entry_new(ObMenu *menu, ObMenuEntryType type, gint id)
 
     g_assert(menu);
 
-    self = g_slice_new0(ObMenuEntry);
+    self = g_new0(ObMenuEntry, 1);
     self->ref = 1;
     self->type = type;
     self->menu = menu;
@@ -573,8 +581,10 @@ void menu_entry_ref(ObMenuEntry *self)
 void menu_entry_unref(ObMenuEntry *self)
 {
     if (self && --self->ref == 0) {
-        g_free(self->label->text);
-        g_free(self->label->lexecute);
+        if (self->label) {
+            g_free(self->label->text);
+            g_free(self->label->lexecute);
+        }
         g_free(self->label);
 
         switch (self->type) {
