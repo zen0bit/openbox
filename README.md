@@ -10,7 +10,7 @@ For example, defining a separator like this:
 ```
 will create a separator menu entry containing the current time.
 
-Note that `<separator>` tags don't need the `label` attribute if a `lexecute` attribute is given. However, for `<menu>` and `<item>` the `label` tag is still necessary to determine the menu keyboard shortcut keys, even though the text will be replaced by the results of the `lexecute` script. In practice it's best to set a `label` that gives a "hint" to what is returned by `lexecute`, as it will not update the shortcut key when run.
+Note that `<separator>` tags don't need the `label` attribute if a `lexecute` attribute is given. However, for `<menu>` and `<item>` tags the `label` attribute is still necessary to determine the menu keyboard shortcut keys, even though the text will be replaced by the results of the `lexecute` script. In practice it's best to set a `label` that gives a "hint" to what is returned by `lexecute`, as it will not update the shortcut key when run.
 
 # Further Development
 - (DONE!) Extend support to include menu and action labels, not only separators.
