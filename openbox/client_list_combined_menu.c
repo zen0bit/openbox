@@ -66,11 +66,13 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
 
                 if (c->iconic) {
                     gchar *title = g_strdup_printf("(%s)", c->icon_title);
-                    e = menu_add_normal(menu, desktop, title, NULL, FALSE);
+                    e = menu_add_normal(menu, desktop, title, NULL, NULL,
+                                        FALSE);
                     g_free(title);
                 } else {
                     onlyiconic = FALSE;
-                    e = menu_add_normal(menu, desktop, c->title, NULL, FALSE);
+                    e = menu_add_normal(menu, desktop, c->title, NULL, NULL,
+                                        FALSE);
                 }
 
                 if (config_menu_show_icons) {
@@ -90,7 +92,8 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
             if (!empty)
                 menu_add_separator(menu, SEPARATOR, NULL, NULL);
 
-            e = menu_add_normal(menu, desktop, _("Go there..."), NULL, TRUE);
+            e = menu_add_normal(menu, desktop, _("Go there..."), NULL, NULL,
+                                TRUE);
             if (desktop == screen_desktop)
                 e->data.normal.enabled = FALSE;
         }
@@ -98,9 +101,10 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
 
     if (config_menu_manage_desktops) {
         menu_add_separator(menu, SEPARATOR, _("Manage desktops"), NULL);
-        menu_add_normal(menu, ADD_DESKTOP, _("_Add new desktop"), NULL, TRUE);
+        menu_add_normal(menu, ADD_DESKTOP, _("_Add new desktop"), NULL, NULL,
+                        TRUE);
         menu_add_normal(menu, REMOVE_DESKTOP, _("_Remove last desktop"),
-                        NULL, TRUE);
+                        NULL, NULL, TRUE);
     }
 
     return TRUE; /* always show the menu */
@@ -154,7 +158,7 @@ void client_list_combined_menu_startup(gboolean reconfig)
     if (!reconfig)
         client_add_destroy_notify(client_dest, NULL);
 
-    combined_menu = menu_new(MENU_NAME, _("Windows"), TRUE, NULL);
+    combined_menu = menu_new(MENU_NAME, _("Windows"), NULL, TRUE, NULL);
     menu_set_update_func(combined_menu, self_update);
     menu_set_cleanup_func(combined_menu, self_cleanup);
     menu_set_execute_func(combined_menu, menu_execute);

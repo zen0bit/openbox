@@ -382,7 +382,7 @@ static void menu_entry_frame_render(ObMenuEntryFrame *self)
         th = ITEM_HEIGHT;
         break;
     case OB_MENU_ENTRY_TYPE_SEPARATOR:
-        if (self->entry->data.separator.label->label) {
+        if (self->entry->label->text) {
             item_a = ob_rr_theme->a_menu_title;
             th = ob_rr_theme->menu_title_height;
         } else {
@@ -415,7 +415,7 @@ static void menu_entry_frame_render(ObMenuEntryFrame *self)
                   (self == self->frame->selected ?
                    ob_rr_theme->a_menu_text_selected :
                    ob_rr_theme->a_menu_text_normal));
-        text_a->texture[0].data.text.string = self->entry->data.normal.label;
+        text_a->texture[0].data.text.string = self->entry->label->text;
         if (self->entry->data.normal.shortcut &&
             (self->frame->menu->show_all_shortcuts ||
              self->entry->data.normal.shortcut_always_show ||
@@ -432,7 +432,7 @@ static void menu_entry_frame_render(ObMenuEntryFrame *self)
                   ob_rr_theme->a_menu_text_selected :
                   ob_rr_theme->a_menu_text_normal);
         sub = self->entry->data.submenu.submenu;
-        text_a->texture[0].data.text.string = sub ? sub->title : "";
+        text_a->texture[0].data.text.string = sub ? sub->label->text : "";
         if (sub && sub->shortcut && (self->frame->menu->show_all_shortcuts ||
                               sub->shortcut_always_show ||
                               sub->shortcut_position > 0))
@@ -443,10 +443,10 @@ static void menu_entry_frame_render(ObMenuEntryFrame *self)
             text_a->texture[0].data.text.shortcut = FALSE;
         break;
     case OB_MENU_ENTRY_TYPE_SEPARATOR:
-        if (self->entry->data.separator.label->label != NULL) {
+        if (self->entry->label->text != NULL) {
             text_a = ob_rr_theme->a_menu_text_title;
             text_a->texture[0].data.text.string =
-                self->entry->data.separator.label->label;
+                self->entry->label->text;
         }
         else
             text_a = ob_rr_theme->a_menu_text_normal;
@@ -479,7 +479,7 @@ static void menu_entry_frame_render(ObMenuEntryFrame *self)
                 ITEM_HEIGHT - 2*PADDING);
         break;
     case OB_MENU_ENTRY_TYPE_SEPARATOR:
-        if (self->entry->data.separator.label->label != NULL) {
+        if (self->entry->label->text != NULL) {
             /* labeled separator */
             XMoveResizeWindow(obt_display, self->text,
                               ob_rr_theme->paddingx, ob_rr_theme->paddingy,
@@ -644,7 +644,7 @@ static gint menu_entry_frame_get_height(ObMenuEntryFrame *self,
         h += ob_rr_theme->menu_font_height;
         break;
     case OB_MENU_ENTRY_TYPE_SEPARATOR:
-        if (self->entry->data.separator.label->label != NULL) {
+        if (self->entry->label->text != NULL) {
             h += ob_rr_theme->menu_title_height +
                 (ob_rr_theme->mbwidth - PADDING) * 2;
 
@@ -725,13 +725,13 @@ void menu_frame_render(ObMenuFrame *self)
            overlap with the menu's outside border */
         if (it == self->entries &&
             e->entry->type == OB_MENU_ENTRY_TYPE_SEPARATOR &&
-            e->entry->data.separator.label->label)
+            e->entry->label->text)
         {
             h -= ob_rr_theme->mbwidth;
         }
 
         if (e->entry->type == OB_MENU_ENTRY_TYPE_SEPARATOR &&
-            e->entry->data.separator.label->label)
+            e->entry->label->text)
         {
             e->border = ob_rr_theme->mbwidth;
         }
@@ -755,7 +755,7 @@ void menu_frame_render(ObMenuFrame *self)
                    ob_rr_theme->a_menu_text_normal));
         switch (e->entry->type) {
         case OB_MENU_ENTRY_TYPE_NORMAL:
-            text_a->texture[0].data.text.string = e->entry->data.normal.label;
+            text_a->texture[0].data.text.string = e->entry->label->text;
             tw = RrMinWidth(text_a);
             tw = MIN(tw, MAX_MENU_WIDTH);
             th = ob_rr_theme->menu_font_height;
@@ -766,7 +766,7 @@ void menu_frame_render(ObMenuFrame *self)
             break;
         case OB_MENU_ENTRY_TYPE_SUBMENU:
             sub = e->entry->data.submenu.submenu;
-            text_a->texture[0].data.text.string = sub ? sub->title : "";
+            text_a->texture[0].data.text.string = sub ? sub->label->text : "";
             tw = RrMinWidth(text_a);
             tw = MIN(tw, MAX_MENU_WIDTH);
             th = ob_rr_theme->menu_font_height;
@@ -778,9 +778,9 @@ void menu_frame_render(ObMenuFrame *self)
             tw += ITEM_HEIGHT - PADDING;
             break;
         case OB_MENU_ENTRY_TYPE_SEPARATOR:
-            if (e->entry->data.separator.label->label != NULL) {
+            if (e->entry->label->text != NULL) {
                 ob_rr_theme->a_menu_text_title->texture[0].data.text.string =
-                    e->entry->data.separator.label->label;
+                    e->entry->label->text;
                 tw = RrMinWidth(ob_rr_theme->a_menu_text_title) +
                     2*ob_rr_theme->paddingx;
                 tw = MIN(tw, MAX_MENU_WIDTH);
@@ -806,7 +806,7 @@ void menu_frame_render(ObMenuFrame *self)
     it = g_list_last(self->entries);
     e = it ? it->data : NULL;
     if (e && e->entry->type == OB_MENU_ENTRY_TYPE_SEPARATOR &&
-        e->entry->data.separator.label->label)
+        e->entry->label->text)
     {
         h -= ob_rr_theme->mbwidth;
     }
