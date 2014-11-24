@@ -48,6 +48,8 @@ static RrAppearance *a_sep;
 static guint submenu_show_timer = 0;
 static guint submenu_hide_timer = 0;
 
+static GMutex menu_entry_frame_render_mutex;
+
 static ObMenuEntryFrame* menu_entry_frame_new(ObMenuEntry *entry,
                                               ObMenuFrame *frame);
 static void menu_entry_frame_free(ObMenuEntryFrame *self);
@@ -56,6 +58,8 @@ static gboolean submenu_show_timeout(gpointer data);
 static void menu_frame_hide(ObMenuFrame *self);
 
 static gboolean submenu_hide_timeout(gpointer data);
+
+static gpointer menu_entry_frame_update_thread(ObMenuFrame *self);
 
 static Window createWindow(Window parent, gulong mask,
                            XSetWindowAttributes *attrib)
@@ -136,12 +140,22 @@ ObMenuFrame* menu_frame_new(ObMenu *menu, guint show_from, ObClient *client)
     window_add(&self->window, MENUFRAME_AS_WINDOW(self));
     stacking_add(MENUFRAME_AS_WINDOW(self));
 
+    self->thread = NULL;
+    g_mutex_init(&self->m);
+    g_cond_init(&self->cond);
+
     return self;
 }
 
 void menu_frame_free(ObMenuFrame *self)
 {
     if (self) {
+
+        //if (self->thread)
+            //g_thread_unref(self->thread);
+        g_mutex_clear(&self->m);
+        g_cond_clear(&self->cond);
+
         while (self->entries) {
             menu_entry_frame_free(self->entries->data);
             self->entries = g_list_delete_link(self->entries, self->entries);
@@ -197,6 +211,8 @@ static ObMenuEntryFrame* menu_entry_frame_new(ObMenuEntry *entry,
 
     window_add(&self->window, MENUFRAME_AS_WINDOW(self->frame));
 
+    g_mutex_init(&self->m);
+
     return self;
 }
 
@@ -220,6 +236,8 @@ static void menu_entry_frame_free(ObMenuEntryFrame *self)
             XDestroyWindow(obt_display, self->bullet);
             g_hash_table_remove(menu_frame_map, &self->bullet);
         }
+
+        g_mutex_clear(&self->m);
 
         g_slice_free(ObMenuEntryFrame, self);
     }
@@ -361,6 +379,8 @@ void menu_frame_move_on_screen(ObMenuFrame *self, gint x, gint y,
 
 static void menu_entry_frame_render(ObMenuEntryFrame *self)
 {
+    g_mutex_lock(&menu_entry_frame_render_mutex);
+
     RrAppearance *item_a, *text_a;
     gint th; /* temp */
     ObMenu *sub;
@@ -619,6 +639,8 @@ static void menu_entry_frame_render(ObMenuEntryFrame *self)
         XUnmapWindow(obt_display, self->bullet);
 
     XFlush(obt_display);
+
+    g_mutex_unlock(&menu_entry_frame_render_mutex);
 }
 
 /*! this code is taken from the menu_frame_render. if that changes, this won't
@@ -994,6 +1016,19 @@ static gboolean menu_frame_show(ObMenuFrame *self)
     if (self->menu->show_func)
         self->menu->show_func(self, self->menu->data);
 
+
+    // Start the thread
+    if (self->thread)
+    {
+        g_cond_signal(&self->cond);
+        g_thread_join(self->thread);
+        g_thread_unref(self->thread);
+    }
+    self->exit_thread = FALSE;
+    self->thread = g_thread_new(NULL,
+                                (GThreadFunc)menu_entry_frame_update_thread,
+                                self);
+
     return TRUE;
 }
 
@@ -1092,6 +1127,15 @@ static void menu_frame_hide(ObMenuFrame *self)
     if (!it)
         return;
 
+    if (self && self->thread)
+    {
+        g_mutex_lock(&self->m);
+        self->exit_thread = TRUE;
+        g_mutex_unlock(&self->m);
+        g_cond_signal(&self->cond);
+        g_thread_join(self->thread);
+    }
+
     if (menu->hide_func)
         menu->hide_func(self, menu->data);
 
@@ -1179,7 +1223,9 @@ ObMenuEntryFrame* menu_entry_frame_under(gint x, gint y)
 static gboolean submenu_show_timeout(gpointer data)
 {
     g_assert(menu_frame_visible);
+    //g_mutex_lock(&((ObMenuEntryFrame*)data)->m);
     menu_entry_frame_show_submenu((ObMenuEntryFrame*)data);
+    //g_mutex_unlock(&((ObMenuEntryFrame*)data)->m);
     return FALSE;
 }
 
@@ -1278,6 +1324,8 @@ void menu_entry_frame_show_submenu(ObMenuEntryFrame *self)
 
     if (!self->entry->data.submenu.submenu) return;
 
+
+    g_mutex_lock(&self->m);
     f = menu_frame_new(self->entry->data.submenu.submenu,
                        self->entry->data.submenu.show_from,
                        self->frame->client);
@@ -1286,6 +1334,7 @@ void menu_entry_frame_show_submenu(ObMenuEntryFrame *self)
 
     if (!menu_frame_show_submenu(f, self->frame, self))
         menu_frame_free(f);
+    g_mutex_unlock(&self->m);
 }
 
 void menu_entry_frame_execute(ObMenuEntryFrame *self, guint state)
@@ -1397,4 +1446,46 @@ void menu_frame_select_last(ObMenuFrame *self)
         }
     }
     menu_frame_select(self, it ? it->data : NULL, FALSE);
+}
+
+gpointer menu_entry_frame_update_thread(ObMenuFrame *self)
+{
+    //g_thread_exit(0);
+    while (1) {
+        /* timeout, 1 second */
+        gint64 timeout = g_get_monotonic_time() + 1 * G_TIME_SPAN_SECOND;
+        g_mutex_lock(&self->m);
+        while(1) {
+            if (g_cond_wait_until(&self->cond, &self->m, timeout))  {
+                /* condition signalled, check exit boolean is set */
+                if (self->exit_thread) {
+                    g_mutex_unlock(&self->m);
+                    g_thread_exit(0);
+                }
+                else
+                {
+                    /* spurious or stolen wakeup, just continue the loop */
+                    continue;
+                }
+            }
+            else
+            {
+                /* timeout occured, break out of loop */
+                g_mutex_unlock(&self->m);
+                break;
+            }
+        }
+
+        /* render each menu frame entry again that requires it */
+        GList *it = NULL;
+        for (it = self->entries; it; it = g_list_next(it)) {
+            ObMenuEntryFrame *e = it->data;
+            g_mutex_lock(&e->m);
+            gboolean label_updated = menu_entry_label_execute(e->entry);
+            if (label_updated) {
+                menu_entry_frame_render(e);
+            }
+            g_mutex_unlock(&e->m);
+        }
+    }
 }

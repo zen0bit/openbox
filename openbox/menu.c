@@ -856,13 +856,13 @@ void menu_sort_entries(ObMenu *self)
     sort_range(self, start, last, len);
 }
 
-void menu_entry_label_execute(ObMenuEntry *self)
+gboolean menu_entry_label_execute(ObMenuEntry *self)
 {
     gchar *output;
     GError *err = NULL;
 
     if (!self->label->lexecute)
-        return;
+        return FALSE;
 
     if (!g_spawn_command_line_sync(self->label->lexecute,
                                    &output, NULL, NULL, &err)) {
@@ -870,7 +870,7 @@ void menu_entry_label_execute(ObMenuEntry *self)
                   self->label->lexecute,
                   self->label->text, err->message);
         g_error_free(err);
-        return;
+        return FALSE;
     }
 
     /* strip the LF char from the end of the output string */
@@ -889,4 +889,6 @@ void menu_entry_label_execute(ObMenuEntry *self)
     }
 
     g_free(output);
+
+    return TRUE;
 }

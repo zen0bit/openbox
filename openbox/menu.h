@@ -243,6 +243,6 @@ void menu_find_submenus(ObMenu *self);
 ObMenuEntry* menu_get_more(ObMenu *menu, guint show_from);
 
 /* execute a menu entry's label's command, if set */
-void menu_entry_label_execute(ObMenuEntry *self);
+gboolean menu_entry_label_execute(ObMenuEntry *self);
 
 #endif
