@@ -79,10 +79,9 @@ typedef struct {
 } Query;
 
 typedef struct {
-    GArray* queries;
+    GArray *queries;
     GSList *thenacts;
     GSList *elseacts;
-    gboolean stop;
 } Options;
 
 static gpointer setup_func(xmlNodePtr node);
@@ -90,6 +89,8 @@ static void     free_func(gpointer options);
 static gboolean run_func_if(ObActionsData *data, gpointer options);
 static gboolean run_func_stop(ObActionsData *data, gpointer options);
 static gboolean run_func_foreach(ObActionsData *data, gpointer options);
+
+static gboolean foreach_stop;
 
 void action_if_startup(void)
 {
@@ -313,7 +314,7 @@ static gboolean run_func_if(ObActionsData *data, gpointer options)
     gboolean is_true = TRUE;
 
     guint i;
-    for (i = 0; i < o->queries->len; ++i) {
+    for (i = 0; is_true && i < o->queries->len; ++i) {
         Query *q = g_array_index(o->queries, Query*, i);
         ObClient *query_target = NULL;
 
@@ -327,7 +328,10 @@ static gboolean run_func_if(ObActionsData *data, gpointer options)
         }
 
         /* If there's no client to query, then false. */
-        is_true &= query_target != NULL;
+        if (!query_target) {
+            is_true = FALSE;
+            break;
+        }
 
         if (q->shaded_on)
             is_true &= query_target->shaded;
@@ -427,14 +431,14 @@ static gboolean run_func_if(ObActionsData *data, gpointer options)
 static gboolean run_func_foreach(ObActionsData *data, gpointer options)
 {
     GList *it;
-    Options *o = options;
 
-    o->stop = FALSE;
+    foreach_stop = FALSE;
 
     for (it = client_list; it; it = g_list_next(it)) {
         data->client = it->data;
         run_func_if(data, options);
-        if (o->stop) {
+        if (foreach_stop) {
+            foreach_stop = FALSE;
             break;
         }
     }
@@ -444,11 +448,9 @@ static gboolean run_func_foreach(ObActionsData *data, gpointer options)
 
 static gboolean run_func_stop(ObActionsData *data, gpointer options)
 {
-    Options *o = options;
-
     /* This stops the loop above so we don't invoke actions on any more
        clients */
-    o->stop = TRUE;
+    foreach_stop = TRUE;
 
     /* TRUE causes actions_run_acts to not run further actions on the current
        client */
