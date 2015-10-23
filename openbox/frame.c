@@ -861,18 +861,18 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
             frame_adjust_shape(self);
         }
 
-        if (!STRUT_EQUAL(self->size, self->oldsize)) {
-            gulong vals[4];
-            vals[0] = self->size.left;
-            vals[1] = self->size.right;
-            vals[2] = self->size.top;
-            vals[3] = self->size.bottom;
-            OBT_PROP_SETA32(self->client->window, NET_FRAME_EXTENTS,
-                            CARDINAL, vals, 4);
-            OBT_PROP_SETA32(self->client->window, KDE_NET_WM_FRAME_STRUT,
-                            CARDINAL, vals, 4);
-            self->oldsize = self->size;
-        }
+        //if (!STRUT_EQUAL(self->size, self->oldsize)) {
+        //    gulong vals[4];
+        //    vals[0] = self->size.left;
+        //    vals[1] = self->size.right;
+        //    vals[2] = self->size.top;
+        //    vals[3] = self->size.bottom;
+        //    OBT_PROP_SETA32(self->client->window, NET_FRAME_EXTENTS,
+        //                    CARDINAL, vals, 4);
+        //    OBT_PROP_SETA32(self->client->window, KDE_NET_WM_FRAME_STRUT,
+        //                    CARDINAL, vals, 4);
+        //    self->oldsize = self->size;
+        //}
 
         /* if this occurs while we are focus cycling, the indicator needs to
            match the changes */
