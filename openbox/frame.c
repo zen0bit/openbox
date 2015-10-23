@@ -376,13 +376,13 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
         self->width = MAX(self->width,
                           (ob_rr_theme->grip_width + self->bwidth) * 2 + 1);
 
-        STRUT_SET(self->size,
-                  self->cbwidth_l + (!self->max_horz ? self->bwidth : 0),
-                  self->cbwidth_t +
-                  (!self->max_horz || !self->max_vert ? self->bwidth : 0),
-                  self->cbwidth_r + (!self->max_horz ? self->bwidth : 0),
-                  self->cbwidth_b +
-                  (!self->max_horz || !self->max_vert ? self->bwidth : 0));
+       // STRUT_SET(self->size,
+       //           self->cbwidth_l + (!self->max_horz ? self->bwidth : 0),
+       //           self->cbwidth_t +
+       //           (!self->max_horz || !self->max_vert ? self->bwidth : 0),
+       //           self->cbwidth_r + (!self->max_horz ? self->bwidth : 0),
+       //           self->cbwidth_b +
+       //         (!self->max_horz || !self->max_vert ? self->bwidth : 0));
 
         if (self->decorations & OB_FRAME_DECOR_TITLEBAR)
             self->size.top += ob_rr_theme->title_height + self->bwidth;
