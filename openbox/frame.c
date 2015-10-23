@@ -376,13 +376,13 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
         self->width = MAX(self->width,
                           (ob_rr_theme->grip_width + self->bwidth) * 2 + 1);
 
-       // STRUT_SET(self->size,
-       //           self->cbwidth_l + (!self->max_horz ? self->bwidth : 0),
-       //           self->cbwidth_t +
-       //           (!self->max_horz || !self->max_vert ? self->bwidth : 0),
-       //           self->cbwidth_r + (!self->max_horz ? self->bwidth : 0),
-       //           self->cbwidth_b +
-       //         (!self->max_horz || !self->max_vert ? self->bwidth : 0));
+        STRUT_SET(self->size,
+                  self->cbwidth_l + (!self->max_horz ? self->bwidth : 0),
+                  self->cbwidth_t +
+                  (!self->max_horz || !self->max_vert ? self->bwidth : 0),
+                  self->cbwidth_r + (!self->max_horz ? self->bwidth : 0),
+                  self->cbwidth_b +
+                (!self->max_horz || !self->max_vert ? self->bwidth : 0));
 
         if (self->decorations & OB_FRAME_DECOR_TITLEBAR)
             self->size.top += ob_rr_theme->title_height + self->bwidth;
@@ -861,18 +861,18 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
             frame_adjust_shape(self);
         }
 
-        //if (!STRUT_EQUAL(self->size, self->oldsize)) {
-        //    gulong vals[4];
-        //    vals[0] = self->size.left;
-        //    vals[1] = self->size.right;
-        //    vals[2] = self->size.top;
-        //    vals[3] = self->size.bottom;
-        //    OBT_PROP_SETA32(self->client->window, NET_FRAME_EXTENTS,
-        //                    CARDINAL, vals, 4);
-        //    OBT_PROP_SETA32(self->client->window, KDE_NET_WM_FRAME_STRUT,
-        //                    CARDINAL, vals, 4);
-        //    self->oldsize = self->size;
-        //}
+        if (!STRUT_EQUAL(self->size, self->oldsize)) {
+            gulong vals[4];
+            vals[0] = self->size.left;
+            vals[1] = self->size.right;
+            vals[2] = self->size.top;
+            vals[3] = self->size.bottom;
+            OBT_PROP_SETA32(self->client->window, NET_FRAME_EXTENTS,
+                            CARDINAL, vals, 4);
+            OBT_PROP_SETA32(self->client->window, KDE_NET_WM_FRAME_STRUT,
+                            CARDINAL, vals, 4);
+            self->oldsize = self->size;
+        }
 
         /* if this occurs while we are focus cycling, the indicator needs to
            match the changes */

@@ -1166,7 +1166,7 @@ gboolean client_find_onscreen(ObClient *self, gint *x, gint *y, gint w, gint h,
            It makes sure 10% of the window is on the screen at least. And don't
            let it move itself off the top of the screen, which would hide the
            titlebar on you. (The user can still do this if they want too, it's
-           only limiting the application.
+           only limiting the vapplication.
         */
         if (client_normal(self)) {
             if (!self->strut.right && *x + fw/10 >= a->x + a->width - 1)
