@@ -235,8 +235,8 @@ gboolean screen_annex(void)
     supported[i++] = OBT_PROP_ATOM(NET_WM_ICON_NAME);
     supported[i++] = OBT_PROP_ATOM(NET_WM_VISIBLE_ICON_NAME);
     supported[i++] = OBT_PROP_ATOM(NET_WM_DESKTOP);
-    supported[i++] = OBT_PROP_ATOM(NET_WM_STRUT);
-    supported[i++] = OBT_PROP_ATOM(NET_WM_STRUT_PARTIAL);
+    //supported[i++] = OBT_PROP_ATOM(NET_WM_STRUT);
+    //supported[i++] = OBT_PROP_ATOM(NET_WM_STRUT_PARTIAL);
     supported[i++] = OBT_PROP_ATOM(NET_WM_ICON);
     supported[i++] = OBT_PROP_ATOM(NET_WM_ICON_GEOMETRY);
     supported[i++] = OBT_PROP_ATOM(NET_WM_WINDOW_TYPE);
