@@ -269,8 +269,8 @@ static void menu_frame_place_topmenu(ObMenuFrame *self, const GravityPoint *pos,
     } else {
         gint myx, myy;
 
-        myx = *x;
-        myy = *y;
+        myx = *x - 22;
+        myy = *y - 22;
 
         /* try to the bottom right of the cursor */
         menu_frame_move_on_screen(self, myx, myy, &dx, &dy);
