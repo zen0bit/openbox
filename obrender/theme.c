@@ -1527,13 +1527,13 @@ static void read_button_styles(XrmDatabase db, const RrInstance *inst,
     btn->a_focused_##type->texture[0].data.mask.color = \
         btn->focused_##type##_color;
 
-    READ_BUTTON_APPEARANCE("unpressed", unpressed, 0);
-    READ_BUTTON_APPEARANCE("pressed", pressed, 0);
-    READ_BUTTON_APPEARANCE("disabled", disabled, 0);
-    READ_BUTTON_APPEARANCE("hover", hover, 0);
+    READ_BUTTON_APPEARANCE("unpressed", unpressed, 1);
+    READ_BUTTON_APPEARANCE("pressed", pressed, 1);
+    READ_BUTTON_APPEARANCE("disabled", disabled, 1);
+    READ_BUTTON_APPEARANCE("hover", hover, 1);
     if (toggled_mask) {
         READ_BUTTON_APPEARANCE("unpressed.toggled", unpressed_toggled, 1);
-        READ_BUTTON_APPEARANCE("pressed.toggled", pressed_toggled, 0);
-        READ_BUTTON_APPEARANCE("hover.toggled", hover_toggled, 0);
+        READ_BUTTON_APPEARANCE("pressed.toggled", pressed_toggled, 1);
+        READ_BUTTON_APPEARANCE("hover.toggled", hover_toggled, 1);
     }
 }
