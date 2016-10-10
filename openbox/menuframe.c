@@ -1314,7 +1314,7 @@ void menu_entry_frame_execute(ObMenuEntryFrame *self, guint state)
         guint mods = obt_keyboard_only_modmasks(state);
 
         /* release grabs before executing the shit */
-        if (!(mods & ControlMask)) {
+        if (!(mods & ControlMask || mods & ShiftMask)) {
             event_cancel_all_key_grabs();
             frame = NULL;
         }

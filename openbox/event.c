@@ -1846,7 +1846,11 @@ static gboolean event_handle_menu_input(XEvent *ev)
                 }
                 menu_frame_select(e->frame, e, TRUE);
                 if (ev->type == ButtonRelease)
-                    menu_entry_frame_execute(e, ev->xbutton.state);
+                    menu_entry_frame_execute(e,
+                            ev->xbutton.state |
+                            ev->xbutton.button == 2 ? ControlMask :
+                            ev->xbutton.button == 3 ? ShiftMask :
+                            0);
             }
             else
                 menu_frame_hide_all();
@@ -1865,7 +1869,7 @@ static gboolean event_handle_menu_input(XEvent *ev)
             g_assert_not_reached(); /* there is no active menu */
 
         /* Allow control while going thru the menu */
-        else if (ev->type == KeyPress && (mods & ~ControlMask) == 0) {
+        else if (ev->type == KeyPress && (mods & ~(ControlMask | ShiftMask)) == 0) {
             gunichar unikey;
             KeySym sym;
 
@@ -1995,8 +1999,8 @@ static gboolean event_handle_menu_input(XEvent *ev)
         /* Use KeyRelease events for running things so that the key release
            doesn't get sent to the focused application.
 
-           Allow ControlMask only, and don't bother if the menu is empty */
-        else if (ev->type == KeyRelease && (mods & ~ControlMask) == 0) {
+           Allow Control/Shift Mask only, and don't bother if the menu is empty */
+        else if (ev->type == KeyRelease && (mods & ~(ControlMask | ShiftMask)) == 0) {
             if (frame->press_keycode == ev->xkey.keycode &&
                 frame->got_press &&
                 frame->press_doexec)
