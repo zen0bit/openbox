@@ -1229,8 +1229,12 @@ void menu_frame_select(ObMenuFrame *self, ObMenuEntryFrame *entry,
 
     self->selected = entry;
 
-    if (old)
+    if (old) {
         menu_entry_frame_render(old);
+        if (self->menu->deselected_func)
+            self->menu->deselected_func(old->entry, self, old->frame->client,
+                0, old->frame->menu->data);
+    }
 
     if (oldchild_entry) {
         /* There is an open submenu */
@@ -1279,6 +1283,9 @@ void menu_frame_select(ObMenuFrame *self, ObMenuEntryFrame *entry,
                 menu_frame_select(self->child, NULL, TRUE);
             }
         }
+        else if (self->menu->selected_func)
+            self->menu->selected_func(entry->entry, self, entry->frame->client,
+                0, entry->frame->menu->data);
     }
 }
 
@@ -1324,6 +1331,9 @@ void menu_entry_frame_execute(ObMenuEntryFrame *self, guint state)
         else
             actions_run_acts(acts, OB_USER_ACTION_MENU_SELECTION,
                              state, -1, -1, 0, OB_FRAME_CONTEXT_NONE, client);
+
+        if (frame)
+            menu_entry_frame_render(self);
     }
 }
 

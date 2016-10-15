@@ -85,6 +85,8 @@ struct _ObMenu
     ObMenuHideFunc hide_func;
     ObMenuUpdateFunc update_func;
     ObMenuExecuteFunc execute_func;
+    ObMenuExecuteFunc selected_func;
+    ObMenuExecuteFunc deselected_func;
     ObMenuCleanupFunc cleanup_func;
     ObMenuDestroyFunc destroy_func;
     ObMenuPlaceFunc place_func;
@@ -197,6 +199,8 @@ void menu_set_update_func(ObMenu *menu, ObMenuUpdateFunc func);
 /*! The execute function is called when a user chooses to execute an
   entry in the menu */
 void menu_set_execute_func(ObMenu *menu, ObMenuExecuteFunc func);
+void menu_set_selected_func(ObMenu *menu, ObMenuExecuteFunc func);
+void menu_set_deselected_func(ObMenu *menu, ObMenuExecuteFunc func);
 /*! The cleanup function is called after a menu is hidden, allowing it
   to be cleaned up between uses */
 void menu_set_cleanup_func(ObMenu *menu, ObMenuCleanupFunc func);

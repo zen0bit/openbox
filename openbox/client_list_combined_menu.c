@@ -24,6 +24,7 @@
 #include "client.h"
 #include "client_list_combined_menu.h"
 #include "focus.h"
+#include "focus_cycle_indicator.h"
 #include "config.h"
 #include "gettext.h"
 
@@ -40,6 +41,7 @@ static ObMenu *combined_menu;
 static void self_cleanup(ObMenu *menu, gpointer data)
 {
     menu_clear_entries(menu);
+    focus_cycle_draw_indicator(NULL);
 }
 
 static gboolean self_update(ObMenuFrame *frame, gpointer data)
@@ -106,6 +108,18 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
     return TRUE; /* always show the menu */
 }
 
+static void menu_selected(ObMenuEntry *self, ObMenuFrame *f,
+                         ObClient *c, guint state, gpointer data)
+{
+    if (self->id == screen_desktop)
+        focus_cycle_draw_indicator(self->data.normal.data);
+}
+static void menu_deselected(ObMenuEntry *self, ObMenuFrame *f,
+                         ObClient *c, guint state, gpointer data)
+{
+    focus_cycle_draw_indicator(NULL);
+}
+
 static void menu_execute(ObMenuEntry *self, ObMenuFrame *f,
                          ObClient *c, guint state, gpointer data)
 {
@@ -122,8 +136,10 @@ static void menu_execute(ObMenuEntry *self, ObMenuFrame *f,
         if (t) { /* it's set to NULL if its destroyed */
             gboolean here = state & ShiftMask;
 
-            if (state & ShiftMask)
+            if (state & ShiftMask) {
                 client_close(t);
+                self->data.normal.enabled = FALSE;
+            }
             else {
                 client_activate(t, TRUE, here, TRUE, TRUE, TRUE);
 
@@ -162,6 +178,8 @@ void client_list_combined_menu_startup(gboolean reconfig)
     combined_menu = menu_new(MENU_NAME, _("Windows"), TRUE, NULL);
     menu_set_update_func(combined_menu, self_update);
     menu_set_cleanup_func(combined_menu, self_cleanup);
+    menu_set_selected_func(combined_menu, menu_selected);
+    menu_set_deselected_func(combined_menu, menu_deselected);
     menu_set_execute_func(combined_menu, menu_execute);
 }
 
