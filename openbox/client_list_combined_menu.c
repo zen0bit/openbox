@@ -44,6 +44,21 @@ static void self_cleanup(ObMenu *menu, gpointer data)
     focus_cycle_draw_indicator(NULL);
 }
 
+static gint get_order(ObClient *c, guint desktop)
+{
+    GList *it;
+    gint i = 0;
+
+    for (it = focus_order; it; it = g_list_next(it))
+        if (it->data == c)
+            return i;
+        else if (focus_valid_target(it->data, desktop,
+                     TRUE, TRUE, FALSE, TRUE, FALSE, FALSE, FALSE))
+            i++;
+
+    return 0;
+}
+
 static gboolean self_update(ObMenuFrame *frame, gpointer data)
 {
     ObMenu *menu = frame->menu;
@@ -58,7 +73,7 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
         gboolean onlyiconic = TRUE;
 
         menu_add_separator(menu, SEPARATOR, screen_desktop_names[desktop]);
-        for (it = focus_order; it; it = g_list_next(it)) {
+        for (it = client_list; it; it = g_list_next(it)) {
             ObClient *c = it->data;
             if (focus_valid_target(c, desktop,
                                    TRUE, TRUE,
@@ -73,6 +88,7 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
                 } else {
                     onlyiconic = FALSE;
                     e = menu_add_normal(menu, desktop, c->title, NULL, FALSE);
+                    e->data.normal.indent = get_order(c, desktop);
                 }
 
                 if (config_menu_show_icons) {

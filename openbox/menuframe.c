@@ -31,9 +31,11 @@
 #include "obrender/theme.h"
 
 #define PADDING 2
-#define MAX_MENU_WIDTH 400
+#define MAX_MENU_WIDTH 600
 
 #define ITEM_HEIGHT (ob_rr_theme->menu_font_height + 2*PADDING)
+#define ITEM_INDENT(indent) (MIN(MAX_MENU_WIDTH, \
+            400 - 6400 / (16 + indent)))
 
 #define FRAME_EVENTMASK (ButtonPressMask |ButtonMotionMask | EnterWindowMask |\
                          LeaveWindowMask)
@@ -465,13 +467,17 @@ static void menu_entry_frame_render(ObMenuEntryFrame *self)
     switch (self->entry->type) {
     case OB_MENU_ENTRY_TYPE_NORMAL:
         XMoveResizeWindow(obt_display, self->text,
-                          self->frame->text_x, PADDING,
+                          self->frame->text_x +
+                              ITEM_INDENT(self->entry->data.normal.indent),
+                          PADDING,
                           self->frame->text_w,
                           ITEM_HEIGHT - 2*PADDING);
         text_a->surface.parent = item_a;
         text_a->surface.parentx = self->frame->text_x;
         text_a->surface.parenty = PADDING;
-        RrPaint(text_a, self->text, self->frame->text_w,
+        RrPaint(text_a, self->text,
+                self->frame->text_w -
+                    ITEM_INDENT(self->entry->data.normal.indent),
                 ITEM_HEIGHT - 2*PADDING);
         break;
     case OB_MENU_ENTRY_TYPE_SUBMENU:
@@ -539,7 +545,8 @@ static void menu_entry_frame_render(ObMenuEntryFrame *self)
         RrAppearance *clear;
 
         XMoveResizeWindow(obt_display, self->icon,
-                          PADDING, frame->item_margin.top,
+                          PADDING + ITEM_INDENT(self->entry->data.normal.indent),
+                          frame->item_margin.top,
                           ITEM_HEIGHT - frame->item_margin.top
                           - frame->item_margin.bottom,
                           ITEM_HEIGHT - frame->item_margin.top
@@ -568,7 +575,8 @@ static void menu_entry_frame_render(ObMenuEntryFrame *self)
         RrAppearance *clear;
 
         XMoveResizeWindow(obt_display, self->icon,
-                          PADDING, frame->item_margin.top,
+                          PADDING + ITEM_INDENT(self->entry->data.normal.indent),
+                          frame->item_margin.top,
                           ITEM_HEIGHT - frame->item_margin.top
                           - frame->item_margin.bottom,
                           ITEM_HEIGHT - frame->item_margin.top
@@ -764,6 +772,7 @@ void menu_frame_render(ObMenuFrame *self)
         case OB_MENU_ENTRY_TYPE_NORMAL:
             text_a->texture[0].data.text.string = e->entry->data.normal.label;
             tw = RrMinWidth(text_a);
+            tw += ITEM_INDENT(e->entry->data.normal.indent);
             tw = MIN(tw, MAX_MENU_WIDTH);
             th = ob_rr_theme->menu_font_height;
 

@@ -110,6 +110,8 @@ struct _ObNormalMenuEntry {
     RrImage *icon;
     gint     icon_alpha;
 
+    gint     indent;
+
     gchar *label;
     gchar *collate_key;
     /*! The shortcut key that would be used to activate this menu entry */
