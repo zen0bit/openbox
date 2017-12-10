@@ -386,12 +386,6 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
 
         if (self->decorations & OB_FRAME_DECOR_TITLEBAR)
             self->size.top += ob_rr_theme->title_height + self->bwidth;
-        else if (self->max_horz && self->max_vert) {
-            /* A maximized and undecorated window needs a border on the
-               top of the window to let the user still undecorate/unmaximize the
-               window via the client menu. */
-            self->size.top += self->bwidth;
-        }
 
         if (self->decorations & OB_FRAME_DECOR_HANDLE &&
             ob_rr_theme->handle_height > 0)
