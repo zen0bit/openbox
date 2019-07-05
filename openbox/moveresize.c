@@ -68,6 +68,8 @@ static guint waiting_for_sync;
 #ifdef SYNC
 static guint sync_timer = 0;
 #endif
+static glong last_move_time = 0;
+static guint move_timer = 0;
 
 static ObPopup *popup = NULL;
 
@@ -328,6 +330,9 @@ void moveresize_end(gboolean cancel)
         if (sync_timer) g_source_remove(sync_timer);
         sync_timer = 0;
 #endif
+    } else {
+        if (move_timer) g_source_remove(move_timer);
+        move_timer = 0;
     }
 
     /* don't use client_move() here, use the same width/height as
@@ -370,6 +375,15 @@ void moveresize_end(gboolean cancel)
     moveresize_client = NULL;
 }
 
+static gboolean move_func(gpointer data)
+{
+    client_configure(moveresize_client, cur_x, cur_y, cur_w, cur_h,
+                     TRUE, FALSE, FALSE);
+
+    move_timer = 0;
+    return FALSE; /* don't repeat */
+}
+
 static void do_move(gboolean keyboard, gint keydist)
 {
     gint resist;
@@ -380,8 +394,27 @@ static void do_move(gboolean keyboard, gint keydist)
     if (!keyboard) resist = config_resist_edge;
     resist_move_monitors(moveresize_client, resist, &cur_x, &cur_y);
 
-    client_configure(moveresize_client, cur_x, cur_y, cur_w, cur_h,
-                     TRUE, FALSE, FALSE);
+    if (!config_move_interval) {
+        client_configure(moveresize_client, cur_x, cur_y, cur_w, cur_h,
+                         TRUE, FALSE, FALSE);
+    } else if (!move_timer) {
+        GTimeVal curr_tm;
+        glong now_ms, next_ms;
+
+        g_get_current_time(&curr_tm);
+        now_ms = curr_tm.tv_sec * 1000 + curr_tm.tv_usec / 1000;
+        next_ms = last_move_time + config_move_interval;
+
+        if (next_ms <= now_ms) {
+            client_configure(moveresize_client, cur_x, cur_y, cur_w, cur_h,
+                             TRUE, FALSE, FALSE);
+            last_move_time = now_ms;
+        } else {
+            move_timer = g_timeout_add(config_move_interval, move_func, NULL);
+            last_move_time = next_ms;
+        }
+    }
+
     if (config_resize_popup_show == 2) /* == "Always" */
         popup_coords(moveresize_client, "%d x %d",
                      moveresize_client->frame->area.x,

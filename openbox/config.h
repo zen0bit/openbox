@@ -103,6 +103,8 @@ extern ObPlaceMonitor config_primary_monitor;
 /*! User-specified margins around the edge of the screen(s) */
 extern StrutPartial config_margins;
 
+/*! duration(ms) to perform moving */
+extern gboolean config_move_interval;
 /*! When true windows' contents are refreshed while they are resized; otherwise
   they are not updated until the resize is complete */
 extern gboolean config_resize_redraw;

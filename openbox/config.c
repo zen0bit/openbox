@@ -65,6 +65,7 @@ GSList *config_desktops_names;
 guint   config_screen_firstdesk;
 guint   config_desktop_popup_time;
 
+gboolean         config_move_interval;
 gboolean         config_resize_redraw;
 gint             config_resize_popup_show;
 ObResizePopupPos config_resize_popup_pos;
@@ -820,6 +821,8 @@ static void parse_resize(xmlNodePtr node, gpointer d)
 
     node = node->children;
 
+    if ((n = obt_xml_find_node(node, "moveInterval")))
+        config_move_interval = obt_xml_node_int(n);
     if ((n = obt_xml_find_node(node, "drawContents")))
         config_resize_redraw = obt_xml_node_bool(n);
     if ((n = obt_xml_find_node(node, "popupShow"))) {
@@ -1115,6 +1118,7 @@ void config_startup(ObtXmlInst *i)
 
     obt_xml_register(i, "desktops", parse_desktops, NULL);
 
+    config_move_interval = 16; /* default is 16 ms(60fps) */
     config_resize_redraw = TRUE;
     config_resize_popup_show = 1; /* nonpixel increments */
     config_resize_popup_pos = OB_RESIZE_POS_CENTER;
