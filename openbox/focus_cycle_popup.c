@@ -421,6 +421,8 @@ static void popup_render(ObFocusCyclePopup *p, const ObClient *c)
     g_assert(mode == OB_FOCUS_CYCLE_POPUP_MODE_ICONS ||
              mode == OB_FOCUS_CYCLE_POPUP_MODE_LIST);
 
+    moveresize_clear_outline();
+
     screen_area = screen_physical_area_primary(FALSE);
 
     /* get the outside margins */
@@ -736,6 +738,8 @@ void focus_cycle_popup_show(ObClient *c, ObFocusCyclePopupMode mode,
 void focus_cycle_popup_hide(void)
 {
     gulong ignore_start;
+
+    moveresize_clear_outline();
 
     ignore_start = event_start_ignore_all_enters();
 

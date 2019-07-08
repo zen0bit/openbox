@@ -71,6 +71,12 @@ static guint sync_timer = 0;
 static glong last_move_time = 0;
 static guint move_timer = 0;
 
+static GC outline_gc = NULL;
+static gint outline_x = 0;
+static gint outline_y = 0;
+static gint outline_w = 0;
+static gint outline_h = 0;
+
 static ObPopup *popup = NULL;
 
 static void do_move(gboolean keyboard, gint keydist);
@@ -333,6 +339,8 @@ void moveresize_end(gboolean cancel)
     } else {
         if (move_timer) g_source_remove(move_timer);
         move_timer = 0;
+
+        moveresize_clear_outline();
     }
 
     /* don't use client_move() here, use the same width/height as
@@ -375,11 +383,94 @@ void moveresize_end(gboolean cancel)
     moveresize_client = NULL;
 }
 
+static void draw_outline(gint x, gint y, gint w, gint h)
+{
+    if (!outline_gc) {
+        /* Start outline moving */
+        XGCValues gcv;
+
+        gcv.function = GXinvert;
+        gcv.line_width = 2;
+        gcv.subwindow_mode = IncludeInferiors;
+
+        outline_gc = XCreateGC(obt_display, obt_root(ob_screen),
+                               GCFunction | GCLineWidth | GCSubwindowMode,
+                               &gcv);
+
+        grab_server(TRUE);
+    }
+
+    if (outline_w || outline_h)
+        XDrawRectangle(obt_display, obt_root(ob_screen), outline_gc,
+                       outline_x, outline_y, outline_w, outline_h);
+
+    outline_x = x;
+    outline_y = y;
+    outline_w = w;
+    outline_h = h;
+
+    if (outline_w || outline_h)
+        XDrawRectangle(obt_display, obt_root(ob_screen), outline_gc,
+                       outline_x, outline_y, outline_w, outline_h);
+}
+
+void moveresize_clear_outline(void)
+{
+    if (!outline_gc)
+        return;
+
+    XDrawRectangle(obt_display, obt_root(ob_screen), outline_gc,
+                   outline_x, outline_y, outline_w, outline_h);
+
+    outline_x = outline_y = outline_w = outline_h = 0;
+
+    /* Finish outline moving */
+    grab_server(FALSE);
+    XFreeGC(obt_display, outline_gc);
+    outline_gc = NULL;
+}
+
+static void do_move_func(void)
+{
+    gint x, y, w, h, lw, lh;
+
+    /* The opaque moving mode */
+    if (config_resize_redraw) {
+        client_configure(moveresize_client, cur_x, cur_y, cur_w, cur_h,
+                         TRUE, FALSE, FALSE);
+
+        if (config_resize_popup_show == 2) /* == "Always" */
+            popup_coords(moveresize_client, "%d x %d",
+                         moveresize_client->frame->area.x,
+                         moveresize_client->frame->area.y);
+
+        return;
+    }
+
+    /* Draw outline at new frame area */
+    x = cur_x;
+    y = cur_y;
+    w = cur_w;
+    h = cur_h;
+    client_try_configure(moveresize_client, &x, &y, &w, &h,
+                         &lw, &lh, TRUE);
+
+    draw_outline(x, y, moveresize_client->frame->area.width,
+                 moveresize_client->frame->area.height);
+
+    /* Draw popup above outline */
+    if (config_resize_popup_show == 2) /* == "Always" */ {
+        /* Hacky way to avoid outline clear */
+        GC gc = outline_gc;
+        outline_gc = NULL;
+        popup_coords(moveresize_client, "%d x %d", x, y);
+        outline_gc = gc;
+    }
+}
+
 static gboolean move_func(gpointer data)
 {
-    client_configure(moveresize_client, cur_x, cur_y, cur_w, cur_h,
-                     TRUE, FALSE, FALSE);
-
+    do_move_func();
     move_timer = 0;
     return FALSE; /* don't repeat */
 }
@@ -394,9 +485,9 @@ static void do_move(gboolean keyboard, gint keydist)
     if (!keyboard) resist = config_resist_edge;
     resist_move_monitors(moveresize_client, resist, &cur_x, &cur_y);
 
+    config_move_interval = 16;
     if (!config_move_interval) {
-        client_configure(moveresize_client, cur_x, cur_y, cur_w, cur_h,
-                         TRUE, FALSE, FALSE);
+        do_move_func();
     } else if (!move_timer) {
         GTimeVal curr_tm;
         glong now_ms, next_ms;
@@ -406,19 +497,13 @@ static void do_move(gboolean keyboard, gint keydist)
         next_ms = last_move_time + config_move_interval;
 
         if (next_ms <= now_ms) {
-            client_configure(moveresize_client, cur_x, cur_y, cur_w, cur_h,
-                             TRUE, FALSE, FALSE);
+            do_move_func();
             last_move_time = now_ms;
         } else {
             move_timer = g_timeout_add(config_move_interval, move_func, NULL);
             last_move_time = next_ms;
         }
     }
-
-    if (config_resize_popup_show == 2) /* == "Always" */
-        popup_coords(moveresize_client, "%d x %d",
-                     moveresize_client->frame->area.x,
-                     moveresize_client->frame->area.y);
 }
 
 static void do_resize(void)

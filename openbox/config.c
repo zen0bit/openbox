@@ -834,7 +834,13 @@ static void parse_resize(xmlNodePtr node, gpointer d)
         else if (obt_xml_node_contains(n, "Nonpixel"))
             config_resize_popup_show = 1;
     }
-    if ((n = obt_xml_find_node(node, "popupPosition"))) {
+
+    if (!config_resize_redraw) {
+        /* Put popup center in outline moving mode */
+        config_resize_popup_pos = OB_RESIZE_POS_FIXED;
+        config_resize_popup_fixed.x.center = TRUE;
+        config_resize_popup_fixed.y.center = TRUE;
+    } else if ((n = obt_xml_find_node(node, "popupPosition"))) {
         if (obt_xml_node_contains(n, "Top"))
             config_resize_popup_pos = OB_RESIZE_POS_TOP;
         else if (obt_xml_node_contains(n, "Center"))
