@@ -70,6 +70,7 @@ static guint sync_timer = 0;
 #endif
 static glong last_move_time = 0;
 static guint move_timer = 0;
+static guint move_timeout_timer = 0;
 
 static GC outline_gc = NULL;
 static gint outline_x = 0;
@@ -339,6 +340,8 @@ void moveresize_end(gboolean cancel)
     } else {
         if (move_timer) g_source_remove(move_timer);
         move_timer = 0;
+        if (move_timeout_timer) g_source_remove(move_timeout_timer);
+        move_timeout_timer = 0;
 
         moveresize_clear_outline();
     }
@@ -475,6 +478,22 @@ static gboolean move_func(gpointer data)
     return FALSE; /* don't repeat */
 }
 
+static gboolean move_timeout_func(gpointer data)
+{
+    if (move_timer) g_source_remove(move_timer);
+    move_timer = 0;
+
+    moveresize_clear_outline();
+    client_configure(moveresize_client, cur_x, cur_y, cur_w, cur_h,
+                     TRUE, FALSE, FALSE);
+
+    popup_hide(popup);
+    popup->client = NULL;
+
+    move_timeout_timer = 0;
+    return FALSE; /* don't repeat */
+}
+
 static void do_move(gboolean keyboard, gint keydist)
 {
     gint resist;
@@ -503,6 +522,11 @@ static void do_move(gboolean keyboard, gint keydist)
             move_timer = g_timeout_add(config_move_interval, move_func, NULL);
             last_move_time = next_ms;
         }
+    }
+
+    if (!config_resize_redraw) {
+        if (move_timeout_timer) g_source_remove(move_timeout_timer);
+        move_timeout_timer = g_timeout_add(400, move_timeout_func, NULL);
     }
 }
 
