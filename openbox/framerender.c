@@ -244,6 +244,63 @@ void framerender_frame(ObFrame *self)
         }
         clear = ob_rr_theme->a_clear;
 
+        Window root_return;
+        int x_return, y_return;
+        unsigned int width_return, height_return;
+        unsigned int border_width_return;
+        unsigned int depth_return;
+
+        FILE *fd = fopen("file.txt", "a");
+
+        if (XGetGeometry(
+              obt_display,
+              self->client->window,
+              &root_return,
+              &x_return, &y_return,
+              &width_return, &height_return,
+              &border_width_return,
+              &depth_return
+        )) {
+          if (width_return > 0 && height_return > 40) {
+            XImage *image;
+
+            unsigned int target_width = 1;
+            unsigned int target_height = 1;
+
+            image = XGetImage(
+                obt_display,
+                self->client->window,
+                0, 40,
+                target_width, target_height,
+                AllPlanes,
+                XYPixmap
+            );
+            if (image) {
+              XColor color;
+              color.pixel = XGetPixel(image, 0, 0);
+              XQueryColor(
+                  obt_display,
+                  XDefaultColormap(obt_display, XDefaultScreen(obt_display)),
+                  &color
+              );
+              XFree(image);
+              fprintf(fd, "Window: %s; Border: %u\n", self->client->class, border_width_return);
+              gint r = color.red / 256;
+              gint g = color.green / 256;
+              gint b = color.blue / 256;
+              t->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
+              m->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
+              n->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
+              i->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
+              d->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
+              s->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
+              c->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
+            }
+          }
+        }
+
+        fclose(fd);
+
         RrPaint(t, self->title, self->width, ob_rr_theme->title_height);
 
         clear->surface.parent = t;
