@@ -985,6 +985,12 @@ void frame_adjust_title(ObFrame *self)
     framerender_frame(self);
 }
 
+void frame_adjust_bg_color(ObFrame *self)
+{
+    self->need_render = TRUE;
+    framerender_frame(self);
+}
+
 void frame_adjust_icon(ObFrame *self)
 {
     self->need_render = TRUE;

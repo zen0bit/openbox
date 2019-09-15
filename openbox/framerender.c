@@ -32,77 +32,6 @@ static void framerender_desk(ObFrame *self, RrAppearance *a);
 static void framerender_shade(ObFrame *self, RrAppearance *a);
 static void framerender_close(ObFrame *self, RrAppearance *a);
 
-static void _znormalizeimagebits (
-    register unsigned char *bp,
-    register XImage *img
-) {
-    register unsigned char c;
-    switch (img->bits_per_pixel) {
-        case 4:
-            *bp = ((*bp >> 4) & 0xF) | ((*bp << 4) & ~0xF);
-            break;
-        case 16:
-            c = *bp;
-            *bp = *(bp + 1);
-            *(bp + 1) = c;
-            break;
-        case 24:
-            c = *(bp + 2);
-            *(bp + 2) = *bp;
-            *bp = c;
-            break;
-        case 32:
-            c = *(bp + 3);
-            *(bp + 3) = *bp;
-            *bp = c;
-            c = *(bp + 2);
-            *(bp + 2) = *(bp + 1);
-            *(bp + 1) = c;
-            break;
-    }
-}
-
-#define ZNORMALIZE(bp, img) \
-    if (img->byte_order == MSBFirst) \
-    _znormalizeimagebits((unsigned char *)(bp), img)
-
-static unsigned long const low_bits_table[] = {
-    0x00000000, 0x00000001, 0x00000003, 0x00000007,
-    0x0000000f, 0x0000001f, 0x0000003f, 0x0000007f,
-    0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff,
-    0x00000fff, 0x00001fff, 0x00003fff, 0x00007fff,
-    0x0000ffff, 0x0001ffff, 0x0003ffff, 0x0007ffff,
-    0x000fffff, 0x001fffff, 0x003fffff, 0x007fffff,
-    0x00ffffff, 0x01ffffff, 0x03ffffff, 0x07ffffff,
-    0x0fffffff, 0x1fffffff, 0x3fffffff, 0x7fffffff,
-    0xffffffff
-};
-
-static unsigned long XGet0Pixel32 (XImage *ximage) {
-    int x = 0;
-    int y = 0;
-
-    unsigned long pixel, px;
-    register char *src;
-    register char *dst;
-    register int i, j;
-    int bits, nbytes;
-    long plane;
-
-    src = &ximage->data[0];
-    dst = (char *)&px;
-    px = 0;
-    for (i = (ximage->bits_per_pixel + 7) >> 3; --i >= 0; ) {
-        *dst++ = *src++;
-    }
-    ZNORMALIZE(&px, ximage);
-    pixel = 0;
-    for (i=sizeof(unsigned long); --i >= 0; ) {
-        pixel = (pixel << 8) | ((unsigned char *)&px)[i];
-    }
-    return pixel;
-}
-
 void framerender_frame(ObFrame *self)
 {
     if (frame_iconify_animating(self))
@@ -313,70 +242,8 @@ void framerender_frame(ObFrame *self)
                    ob_rr_theme->btn_close->a_unfocused_hover :
                    ob_rr_theme->btn_close->a_unfocused_unpressed)));
         }
+        t = self->client->a_title;
         clear = ob_rr_theme->a_clear;
-
-        Window root_return;
-        int x_return, y_return;
-        unsigned int width_return, height_return;
-        unsigned int border_width_return;
-        unsigned int depth_return;
-
-        if (XGetGeometry(
-            obt_display,
-            self->client->window,
-            &root_return,
-            &x_return, &y_return,
-            &width_return, &height_return,
-            &border_width_return,
-            &depth_return
-        )) {
-            if (width_return > 0 && height_return > 40) {
-                XImage *image;
-
-                unsigned int target_width = 1;
-                unsigned int target_height = 1;
-
-                image = XGetImage(
-                    obt_display,
-                    self->client->window,
-                    0, 40,
-                    target_width, target_height,
-                    AllPlanes,
-                    ZPixmap
-                );
-                if (image) {
-                    XInitImage(image);
-                    XColor color;
-                    gint r;
-                    gint g;
-                    gint b;
-                    if (image->depth == 32) {
-                        color.pixel = XGet0Pixel32(image);
-                        r = (color.pixel >> 16) & 0xff;
-                        g = (color.pixel >> 8) & 0xff;
-                        b = (color.pixel >> 0) & 0xff;
-                    } else {
-                        color.pixel = XGetPixel(image, 0, 0);
-                        XQueryColor(
-                            obt_display,
-                            XDefaultColormap(obt_display, XDefaultScreen(obt_display)),
-                            &color
-                        );
-                        r = color.red / 256;
-                        g = color.green / 256;
-                        b = color.blue / 256;
-                    }
-                    t->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
-                    m->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
-                    n->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
-                    i->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
-                    d->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
-                    s->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
-                    c->surface.primary = RrColorNew(ob_rr_inst, r, g, b);
-                    XFree(image);
-                }
-            }
-        }
 
         RrPaint(t, self->title, self->width, ob_rr_theme->title_height);
 

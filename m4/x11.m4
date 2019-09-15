@@ -93,6 +93,65 @@ AC_DEFUN([X11_EXT_XKB],
   fi
 ])
 
+# X11_EXT_DAMAGE()
+#
+# Check for the presence of the "Xkb" X Window System extension.
+# Defines "XKB" and sets the $(XKB) variable to "yes" if the extension is
+# present.
+AC_DEFUN([X11_EXT_DAMAGE],
+[
+  AC_REQUIRE([X11_DEVEL])
+
+  AC_ARG_ENABLE([damage],
+  AC_HELP_STRING(
+  [--disable-damage],
+  [build without support for damage extension [default=enabled]]),
+  [USE=$enableval], [USE="yes"])
+
+  if test "$USE" = "yes"; then
+    # Store these
+    OLDLIBS=$LIBS
+    OLDCPPFLAGS=$CPPFLAGS
+
+    CPPFLAGS="$CPPFLAGS $X_CFLAGS"
+    LIBS="$LIBS $X_LIBS"
+
+    AC_CHECK_LIB([Xdamage], [XDamageQueryExtension],
+      AC_MSG_CHECKING([for X11/extensions/Xdamage.h])
+      AC_TRY_LINK(
+      [
+        #include <X11/extensions/Xdamage.h>
+      ],
+      [
+      ],
+      [
+        AC_MSG_RESULT([yes])
+        DAMAGE="yes"
+        AC_DEFINE([DAMAGE], [1], [Found the DAMAGE extension])
+
+        DAMAGE_CFLAGS=""
+        DAMAGE_LIBS="-lXdamage"
+        AC_SUBST(DAMAGE_CFLAGS)
+        AC_SUBST(DAMAGE_LIBS)
+      ],
+      [
+        AC_MSG_RESULT([no])
+        DAMAGE="no"
+      ])
+    )
+
+    LIBS=$OLDLIBS
+    CPPFLAGS=$OLDCPPFLAGS
+  fi
+
+  AC_MSG_CHECKING([for the Xdamage extension])
+  if test "$DAMAGE" = "yes"; then
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
+  fi
+])
+
 # X11_EXT_XRANDR()
 #
 # Check for the presence of the "XRandR" X Window System extension.

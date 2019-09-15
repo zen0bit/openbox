@@ -46,6 +46,8 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/extensions/Xdamage.h>
+#include <X11/extensions/damagewire.h>
 #include <glib.h>
 
 #ifdef HAVE_SYS_SELECT_H
@@ -577,10 +579,10 @@ static void event_process(const XEvent *ec, gpointer data)
         }
         else if (client != focus_client) {
             focus_left_screen = FALSE;
-            frame_adjust_focus(client->frame, TRUE);
             focus_set_client(client);
             client_calc_layer(client);
             client_bring_helper_windows(client);
+            frame_adjust_focus(client->frame, TRUE);
         }
 
         waiting_for_focusin = FALSE;
@@ -1716,8 +1718,17 @@ static void event_handle_client(ObClient *client, XEvent *e)
     case ColormapNotify:
         client_update_colormap(client, e->xcolormap.colormap);
         break;
+
     default:
         ;
+        if (e->type == damage_event_base + XDamageNotify) {
+            XDamageNotifyEvent *xdmgevt = (XDamageNotifyEvent *)e;
+            if (xdmgevt->area.y == 0 && xdmgevt->area.x < 6) {
+              /* something at top left area of window has been repainted */
+              client_update_bg_color(client);
+            }
+            XDamageSubtract(obt_display, client->damage, None, None);
+        }
 #ifdef SHAPE
         {
             int kind;

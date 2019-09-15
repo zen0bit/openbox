@@ -222,7 +222,7 @@ struct _RrTexture {
 
 struct _RrAppearance {
     const RrInstance *inst;
-    
+
     RrSurface surface;
     gint textures;
     RrTexture *texture;

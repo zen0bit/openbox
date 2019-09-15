@@ -19,6 +19,8 @@
 #ifndef __openbox_h
 #define __openbox_h
 
+#include <X11/extensions/Xdamage.h>
+
 #include "misc.h"
 
 #include "obrender/render.h"
@@ -47,6 +49,10 @@ extern gboolean ob_debug_xinerama;
 
 /*! The current locale for the LC_MESSAGES category */
 extern const gchar *ob_locale_msg;
+
+extern int damage_event_base;
+extern int damage_error_base;
+extern Damage damage;
 
 /* The state of execution of the window manager */
 ObState ob_state(void);

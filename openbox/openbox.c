@@ -107,6 +107,10 @@ static gboolean  being_replaced = FALSE;
 static gchar    *config_file = NULL;
 static gchar    *startup_cmd = NULL;
 
+int damage_event_base;
+int damage_error_base;
+Damage damage;
+
 static void signal_handler(gint signal, gpointer data);
 static void remove_args(gint *argc, gchar **argv, gint index, gint num);
 static void parse_env();
@@ -176,6 +180,8 @@ gint main(gint argc, gchar **argv)
     obt_signal_add_callback(SIGTTOU, signal_handler, NULL);
 
     ob_screen = DefaultScreen(obt_display);
+
+    XDamageQueryExtension(obt_display, &damage_event_base, &damage_error_base);
 
     ob_rr_inst = RrInstanceNew(obt_display, ob_screen);
     if (ob_rr_inst == NULL)
