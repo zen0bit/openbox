@@ -388,9 +388,12 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
                   self->cbwidth_b +
                   (!self->max_horz || !self->max_vert ? self->bwidth : 0));
 
-        if (self->decorations & OB_FRAME_DECOR_TITLEBAR)
-            self->size.top += ob_rr_theme->title_height + self->bwidth + SEPARATOR_WIDTH;
-        else if (self->max_horz && self->max_vert) {
+        if (self->decorations & OB_FRAME_DECOR_TITLEBAR) {
+            self->size.top += ob_rr_theme->title_height + self->bwidth;
+            if (!self->client->hide_titlebar_separator) {
+              self->size.top += SEPARATOR_WIDTH;
+            }
+        } else if (self->max_horz && self->max_vert) {
             /* A maximized and undecorated window needs a border on the
                top of the window to let the user still undecorate/unmaximize the
                window via the client menu. */
@@ -553,7 +556,7 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
                     XMapWindow(obt_display, self->titlebottom);
                 } else
                     XUnmapWindow(obt_display, self->titlebottom);
-            } else if (SEPARATOR_WIDTH) {
+            } else if (SEPARATOR_WIDTH && !self->client->hide_titlebar_separator) {
                 if (self->decorations & OB_FRAME_DECOR_TITLEBAR) {
                     XMoveResizeWindow(obt_display, self->titlebottom,
                                       (self->max_horz ? 0 : self->bwidth),

@@ -1196,6 +1196,13 @@ static ObAppSettings *client_get_settings_state(ObClient *self)
         self->below = FALSE;
         self->above = TRUE;
     }
+
+    if (settings->titlebar_separator != -1) {
+        self->hide_titlebar_separator = !settings->titlebar_separator;
+    } else {
+        self->hide_titlebar_separator = FALSE;
+    }
+
     return settings;
 }
 

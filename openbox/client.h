@@ -328,6 +328,11 @@ struct _ObClient
     RrAppearance *a_title;
     RrAppearance *a_label;
     RrAppearance *a_label_act;
+
+    /*! A user option. When this is set to TRUE the client will not get the titlebar
+      decorator.
+    */
+    gboolean hide_titlebar_separator;
 };
 
 extern GList      *client_list;

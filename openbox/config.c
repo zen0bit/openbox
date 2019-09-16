@@ -123,6 +123,7 @@ ObAppSettings* config_create_app_settings(void)
     settings->fullscreen = -1;
     settings->max_horz = -1;
     settings->max_vert = -1;
+    settings->titlebar_separator = -1;
     return settings;
 }
 
@@ -148,6 +149,7 @@ void config_app_settings_copy_non_defaults(const ObAppSettings *src,
     copy_if(fullscreen, -1);
     copy_if(max_horz, -1);
     copy_if(max_vert, -1);
+    copy_if(titlebar_separator, -1);
 
     if (src->pos_given) {
         dst->pos_given = TRUE;
@@ -343,6 +345,10 @@ static void parse_single_per_app_settings(xmlNodePtr app,
             g_free(s);
         }
     }
+
+    if ((n = obt_xml_find_node(app->children, "titlebar_separator")))
+        if (!obt_xml_node_contains(n, "default"))
+            settings->titlebar_separator = obt_xml_node_bool(n);
 }
 
 /* Manages settings for individual applications.

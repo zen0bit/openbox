@@ -64,6 +64,7 @@ struct _ObAppSettings
     gint max_horz;
     gint max_vert;
     gint fullscreen;
+    gint titlebar_separator;
 
     gint layer;
 };
