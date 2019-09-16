@@ -1183,7 +1183,7 @@ static void place_button(ObFrame *self, const char *lc, gint bwidth,
   if (!(*button_on = is_button_present(self, lc, i)))
     return;
 
-  self->label_width -= bwidth;
+  self->label_width -= bwidth * 2; // * 2 to center label
   if (i > 0)
     *button_x = *x;
   *x += i * bwidth;
