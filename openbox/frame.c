@@ -43,6 +43,8 @@
 #define FRAME_ANIMATE_ICONIFY_TIME 150000 /* .15 seconds */
 #define FRAME_ANIMATE_ICONIFY_STEP_TIME (1000 / 60) /* 60 Hz */
 
+#define SEPARATOR_WIDTH 1
+
 #define FRAME_HANDLE_Y(f) (f->size.top + f->client->area.height + f->cbwidth_b)
 
 static void flash_done(gpointer data);
@@ -387,7 +389,7 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
                   (!self->max_horz || !self->max_vert ? self->bwidth : 0));
 
         if (self->decorations & OB_FRAME_DECOR_TITLEBAR)
-            self->size.top += ob_rr_theme->title_height + self->bwidth;
+            self->size.top += ob_rr_theme->title_height + self->bwidth + SEPARATOR_WIDTH;
         else if (self->max_horz && self->max_vert) {
             /* A maximized and undecorated window needs a border on the
                top of the window to let the user still undecorate/unmaximize the
@@ -551,6 +553,17 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
                     XMapWindow(obt_display, self->titlebottom);
                 } else
                     XUnmapWindow(obt_display, self->titlebottom);
+            } else if (SEPARATOR_WIDTH) {
+                if (self->decorations & OB_FRAME_DECOR_TITLEBAR) {
+                    XMoveResizeWindow(obt_display, self->titlebottom,
+                                      (self->max_horz ? 0 : self->bwidth),
+                                      ob_rr_theme->title_height + self->bwidth,
+                                      self->width,
+                                      SEPARATOR_WIDTH);
+                    XMapWindow(obt_display, self->titlebottom);
+                } else {
+                    XUnmapWindow(obt_display, self->titlebottom);
+                }
             } else {
                 XUnmapWindow(obt_display, self->titlebottom);
 

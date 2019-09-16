@@ -409,6 +409,7 @@ void client_manage(Window window, ObPrompt *prompt)
     self->bg_color = RrColorNew(ob_rr_inst, 0, 0, 0);
     self->fg_color = RrColorNew(ob_rr_inst, 128, 128, 128);
     self->fg_color_act = RrColorNew(ob_rr_inst, 192, 192, 192);
+    self->separator_color = RrColorNew(ob_rr_inst, 0, 0, 0);
 
     self->a_title->surface.grad = RR_SURFACE_SOLID;
     self->a_title->surface.relief = RR_RELIEF_FLAT;
@@ -1985,10 +1986,16 @@ void client_update_bg_color(ObClient *self)
                   new_fg_hsv.v = new_fg_hsv.v / 3;
                   new_fg_act_hsv.v = new_fg_act_hsv.v / 5;
                 }
+
+                HsvColor new_separator_hsv = bg_hsv;
+                new_separator_hsv.v = bg_hsv.v * 0.8;
+                RgbColor new_separator_rgb = HsvToRgb(new_separator_hsv);
+
                 RgbColor new_fg_rgb = HsvToRgb(new_fg_hsv);
                 RgbColor new_fg_act_rgb = HsvToRgb(new_fg_act_hsv);
                 self->fg_color = RrColorNew(ob_rr_inst, new_fg_rgb.r, new_fg_rgb.g, new_fg_rgb.b);
                 self->fg_color_act = RrColorNew(ob_rr_inst, new_fg_act_rgb.r, new_fg_act_rgb.g, new_fg_act_rgb.b);
+                self->separator_color = RrColorNew(ob_rr_inst, new_separator_rgb.r, new_separator_rgb.g, new_separator_rgb.b);
                 self->a_label->surface.primary = self->bg_color;
                 self->a_label->surface.secondary = self->fg_color;
                 self->a_label->texture[0].data.text.color = self->fg_color;

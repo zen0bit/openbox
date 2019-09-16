@@ -324,6 +324,7 @@ struct _ObClient
     RrColor *bg_color;
     RrColor *fg_color;
     RrColor *fg_color_act;
+    RrColor *separator_color;
     RrAppearance *a_title;
     RrAppearance *a_label;
     RrAppearance *a_label_act;
