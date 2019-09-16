@@ -320,9 +320,13 @@ struct _ObClient
     /*! A boolean used for algorithms which need to mark clients as visited */
     gboolean visited;
 
-    /* A RrColor and RrAppearance used to draw window titlebar background */
+    /* A RrColor and RrAppearance used to draw the window titlebar*/
     RrColor *bg_color;
+    RrColor *fg_color;
+    RrColor *fg_color_act;
     RrAppearance *a_title;
+    RrAppearance *a_label;
+    RrAppearance *a_label_act;
 };
 
 extern GList      *client_list;

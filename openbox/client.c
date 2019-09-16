@@ -65,6 +65,90 @@
 #define CLIENT_NOPROPAGATEMASK (ButtonPressMask | ButtonReleaseMask | \
                                 ButtonMotionMask)
 
+typedef struct RgbColor {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+} RgbColor;
+
+typedef struct HsvColor {
+    unsigned char h;
+    unsigned char s;
+    unsigned char v;
+} HsvColor;
+
+RgbColor HsvToRgb(HsvColor hsv) {
+    RgbColor rgb;
+    unsigned char region, remainder, p, q, t;
+
+    if (hsv.s == 0) {
+        rgb.r = hsv.v;
+        rgb.g = hsv.v;
+        rgb.b = hsv.v;
+        return rgb;
+    }
+
+    region = hsv.h / 43;
+    remainder = (hsv.h - (region * 43)) * 6;
+
+    p = (hsv.v * (255 - hsv.s)) >> 8;
+    q = (hsv.v * (255 - ((hsv.s * remainder) >> 8))) >> 8;
+    t = (hsv.v * (255 - ((hsv.s * (255 - remainder)) >> 8))) >> 8;
+
+    switch (region) {
+        case 0:
+            rgb.r = hsv.v; rgb.g = t; rgb.b = p;
+            break;
+        case 1:
+            rgb.r = q; rgb.g = hsv.v; rgb.b = p;
+            break;
+        case 2:
+            rgb.r = p; rgb.g = hsv.v; rgb.b = t;
+            break;
+        case 3:
+            rgb.r = p; rgb.g = q; rgb.b = hsv.v;
+            break;
+        case 4:
+            rgb.r = t; rgb.g = p; rgb.b = hsv.v;
+            break;
+        default:
+            rgb.r = hsv.v; rgb.g = p; rgb.b = q;
+            break;
+    }
+
+    return rgb;
+}
+
+HsvColor RgbToHsv(RgbColor rgb) {
+    HsvColor hsv;
+    unsigned char rgbMin, rgbMax;
+
+    rgbMin = rgb.r < rgb.g ? (rgb.r < rgb.b ? rgb.r : rgb.b) : (rgb.g < rgb.b ? rgb.g : rgb.b);
+    rgbMax = rgb.r > rgb.g ? (rgb.r > rgb.b ? rgb.r : rgb.b) : (rgb.g > rgb.b ? rgb.g : rgb.b);
+
+    hsv.v = rgbMax;
+    if (hsv.v == 0) {
+        hsv.h = 0;
+        hsv.s = 0;
+        return hsv;
+    }
+
+    hsv.s = 255 * ((long)(rgbMax - rgbMin)) / hsv.v;
+    if (hsv.s == 0) {
+        hsv.h = 0;
+        return hsv;
+    }
+
+    if (rgbMax == rgb.r)
+        hsv.h = 0 + 43 * (rgb.g - rgb.b) / (rgbMax - rgbMin);
+    else if (rgbMax == rgb.g)
+        hsv.h = 85 + 43 * (rgb.b - rgb.r) / (rgbMax - rgbMin);
+    else
+        hsv.h = 171 + 43 * (rgb.r - rgb.g) / (rgbMax - rgbMin);
+
+    return hsv;
+}
+
 static void _znormalizeimagebits (
     register unsigned char *bp,
     register XImage *img
@@ -320,15 +404,43 @@ void client_manage(Window window, ObPrompt *prompt)
     client_get_all(self, TRUE);
 
     self->a_title = RrAppearanceNew(ob_rr_inst, 0);
+    self->a_label = RrAppearanceNew(ob_rr_inst, 1);
+    self->a_label_act = RrAppearanceNew(ob_rr_inst, 1);
     self->bg_color = RrColorNew(ob_rr_inst, 0, 0, 0);
+    self->fg_color = RrColorNew(ob_rr_inst, 128, 128, 128);
+    self->fg_color_act = RrColorNew(ob_rr_inst, 192, 192, 192);
 
     self->a_title->surface.grad = RR_SURFACE_SOLID;
     self->a_title->surface.relief = RR_RELIEF_FLAT;
     self->a_title->surface.bevel = RR_BEVEL_1;
     self->a_title->surface.interlaced = FALSE;
     self->a_title->surface.border = FALSE;
-    self->a_title->surface.primary = RrColorNew(ob_rr_inst, 0, 0, 0);
+    self->a_title->surface.primary = self->bg_color;
     self->a_title->surface.secondary = RrColorNew(ob_rr_inst, 0, 0, 0);
+
+    self->a_label->surface.grad = RR_SURFACE_SOLID;
+    self->a_label->surface.relief = RR_RELIEF_FLAT;
+    self->a_label->surface.bevel = RR_BEVEL_1;
+    self->a_label->surface.interlaced = FALSE;
+    self->a_label->surface.border = FALSE;
+    self->a_label->surface.primary = self->bg_color;
+    self->a_label->surface.secondary = self->fg_color;
+    self->a_label->texture[0].type = RR_TEXTURE_TEXT;
+    self->a_label->texture[0].data.text.justify = ob_rr_theme->a_focused_label->texture[0].data.text.justify;
+    self->a_label->texture[0].data.text.font = ob_rr_theme->a_focused_label->texture[0].data.text.font;
+    self->a_label->texture[0].data.text.color = self->fg_color;
+
+    self->a_label_act->surface.grad = RR_SURFACE_SOLID;
+    self->a_label_act->surface.relief = RR_RELIEF_FLAT;
+    self->a_label_act->surface.bevel = RR_BEVEL_1;
+    self->a_label_act->surface.interlaced = FALSE;
+    self->a_label_act->surface.border = FALSE;
+    self->a_label_act->surface.primary = self->bg_color;
+    self->a_label_act->surface.secondary = self->fg_color_act;
+    self->a_label_act->texture[0].type = RR_TEXTURE_TEXT;
+    self->a_label_act->texture[0].data.text.justify = ob_rr_theme->a_focused_label->texture[0].data.text.justify;
+    self->a_label_act->texture[0].data.text.font = ob_rr_theme->a_focused_label->texture[0].data.text.font;
+    self->a_label_act->texture[0].data.text.color = self->fg_color_act;
 
     self->damage = XDamageCreate(obt_display, window, XDamageReportNonEmpty);
 
@@ -1850,6 +1962,39 @@ void client_update_bg_color(ObClient *self)
             if (self->bg_color->pixel != rr_color->pixel) {
                 self->bg_color = rr_color;
                 self->a_title->surface.primary = self->bg_color;
+                RgbColor bg_rgb = {
+                    .r = r,
+                    .g = g,
+                    .b = b
+                };
+                int distanceB, distanceW;
+
+                distanceB = 0.2 * r + g * 0.7 + b * 0.1;
+                distanceW = (255 - r) * 0.2 + (255 - g) * 0.7 + (255 - b) * 0.1;
+
+                HsvColor bg_hsv = RgbToHsv(bg_rgb);
+                HsvColor new_fg_hsv = bg_hsv;
+                HsvColor new_fg_act_hsv = bg_hsv;
+
+                if (distanceB < distanceW) {
+                  new_fg_hsv.s = MIN(new_fg_hsv.s, 32);
+                  new_fg_hsv.v = new_fg_hsv.v + (255 - new_fg_hsv.v) * 0.5;
+                  new_fg_act_hsv.s = MIN(new_fg_act_hsv.s, 32);
+                  new_fg_act_hsv.v = new_fg_act_hsv.v + (255 - new_fg_act_hsv.v) * 0.85;
+                } else {
+                  new_fg_hsv.v = new_fg_hsv.v / 3;
+                  new_fg_act_hsv.v = new_fg_act_hsv.v / 5;
+                }
+                RgbColor new_fg_rgb = HsvToRgb(new_fg_hsv);
+                RgbColor new_fg_act_rgb = HsvToRgb(new_fg_act_hsv);
+                self->fg_color = RrColorNew(ob_rr_inst, new_fg_rgb.r, new_fg_rgb.g, new_fg_rgb.b);
+                self->fg_color_act = RrColorNew(ob_rr_inst, new_fg_act_rgb.r, new_fg_act_rgb.g, new_fg_act_rgb.b);
+                self->a_label->surface.primary = self->bg_color;
+                self->a_label->surface.secondary = self->fg_color;
+                self->a_label->texture[0].data.text.color = self->fg_color;
+                self->a_label_act->surface.primary = self->bg_color;
+                self->a_label_act->surface.secondary = self->fg_color_act;
+                self->a_label_act->texture[0].data.text.color = self->fg_color_act;
                 frame_adjust_bg_color(self->frame);
             }
             XFree(image);
