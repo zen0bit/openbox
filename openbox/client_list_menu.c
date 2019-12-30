@@ -62,11 +62,12 @@ static gboolean desk_menu_update(ObMenuFrame *frame, gpointer data)
 
             if (c->iconic) {
                 gchar *title = g_strdup_printf("(%s)", c->icon_title);
-                e = menu_add_normal(menu, d->desktop, title, NULL, FALSE);
+                e = menu_add_normal(menu, d->desktop, title, NULL, NULL, FALSE);
                 g_free(title);
             } else {
                 onlyiconic = FALSE;
-                e = menu_add_normal(menu, d->desktop, c->title, NULL, FALSE);
+                e = menu_add_normal(menu, d->desktop, c->title, NULL,
+                                    NULL, FALSE);
             }
 
             if (config_menu_show_icons) {
@@ -85,9 +86,10 @@ static gboolean desk_menu_update(ObMenuFrame *frame, gpointer data)
         /* no entries or only iconified windows, so add a
          * way to go to this desktop without uniconifying a window */
         if (!empty)
-            menu_add_separator(menu, SEPARATOR, NULL);
+            menu_add_separator(menu, SEPARATOR, NULL, NULL);
 
-        e = menu_add_normal(menu, d->desktop, _("Go there..."), NULL, TRUE);
+        e = menu_add_normal(menu, d->desktop, _("Go there..."), NULL, NULL,
+                            TRUE);
         if (d->desktop == screen_desktop)
             e->data.normal.enabled = FALSE;
     }
@@ -149,7 +151,7 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
         DesktopData *ddata = g_slice_new(DesktopData);
 
         ddata->desktop = i;
-        submenu = menu_new(name, screen_desktop_names[i], FALSE, ddata);
+        submenu = menu_new(name, screen_desktop_names[i], NULL, FALSE, ddata);
         menu_set_update_func(submenu, desk_menu_update);
         menu_set_execute_func(submenu, desk_menu_execute);
         menu_set_destroy_func(submenu, desk_menu_destroy);
@@ -162,10 +164,11 @@ static gboolean self_update(ObMenuFrame *frame, gpointer data)
     }
 
     if (config_menu_manage_desktops) {
-        menu_add_separator(menu, SEPARATOR, NULL);
-        menu_add_normal(menu, ADD_DESKTOP, _("_Add new desktop"), NULL, TRUE);
+        menu_add_separator(menu, SEPARATOR, NULL, NULL);
+        menu_add_normal(menu, ADD_DESKTOP, _("_Add new desktop"), NULL, NULL,
+                        TRUE);
         menu_add_normal(menu, REMOVE_DESKTOP, _("_Remove last desktop"),
-                        NULL, TRUE);
+                        NULL, NULL, TRUE);
     }
 
     return TRUE; /* always show */
@@ -211,7 +214,7 @@ void client_list_menu_startup(gboolean reconfig)
     if (!reconfig)
         client_add_destroy_notify(client_dest, NULL);
 
-    menu = menu_new(MENU_NAME, _("Desktops"), TRUE, NULL);
+    menu = menu_new(MENU_NAME, _("Desktops"), NULL, TRUE, NULL);
     menu_set_update_func(menu, self_update);
     menu_set_cleanup_func(menu, self_cleanup);
     menu_set_execute_func(menu, self_execute);
