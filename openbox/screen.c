@@ -235,8 +235,8 @@ gboolean screen_annex(void)
     supported[i++] = OBT_PROP_ATOM(NET_WM_ICON_NAME);
     supported[i++] = OBT_PROP_ATOM(NET_WM_VISIBLE_ICON_NAME);
     supported[i++] = OBT_PROP_ATOM(NET_WM_DESKTOP);
-    supported[i++] = OBT_PROP_ATOM(NET_WM_STRUT);
-    supported[i++] = OBT_PROP_ATOM(NET_WM_STRUT_PARTIAL);
+    //supported[i++] = OBT_PROP_ATOM(NET_WM_STRUT);
+    //supported[i++] = OBT_PROP_ATOM(NET_WM_STRUT_PARTIAL);
     supported[i++] = OBT_PROP_ATOM(NET_WM_ICON);
     supported[i++] = OBT_PROP_ATOM(NET_WM_ICON_GEOMETRY);
     supported[i++] = OBT_PROP_ATOM(NET_WM_WINDOW_TYPE);
@@ -1460,17 +1460,17 @@ void screen_update_areas(void)
     RESET_STRUT_LIST(struts_bottom);
 
     /* collect the struts */
-    for (it = client_list; it; it = g_list_next(it)) {
-        ObClient *c = it->data;
-        if (c->strut.left)
-            ADD_STRUT_TO_LIST(struts_left, c->desktop, &c->strut);
-        if (c->strut.top)
-            ADD_STRUT_TO_LIST(struts_top, c->desktop, &c->strut);
-        if (c->strut.right)
-            ADD_STRUT_TO_LIST(struts_right, c->desktop, &c->strut);
-        if (c->strut.bottom)
-            ADD_STRUT_TO_LIST(struts_bottom, c->desktop, &c->strut);
-    }
+    //for (it = client_list; it; it = g_list_next(it)) {
+    //    ObClient *c = it->data;
+    //    if (c->strut.left)
+    //        ADD_STRUT_TO_LIST(struts_left, c->desktop, &c->strut);
+    //    if (c->strut.top)
+    //        ADD_STRUT_TO_LIST(struts_top, c->desktop, &c->strut);
+    //    if (c->strut.right)
+    //        ADD_STRUT_TO_LIST(struts_right, c->desktop, &c->strut);
+    //    if (c->strut.bottom)
+    //        ADD_STRUT_TO_LIST(struts_bottom, c->desktop, &c->strut);
+    //}
     if (dock_strut.left)
         ADD_STRUT_TO_LIST(struts_left, DESKTOP_ALL, &dock_strut);
     if (dock_strut.top)

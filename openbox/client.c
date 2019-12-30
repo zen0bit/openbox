@@ -1172,7 +1172,7 @@ gboolean client_find_onscreen(ObClient *self, gint *x, gint *y, gint w, gint h,
            It makes sure 10% of the window is on the screen at least. And don't
            let it move itself off the top of the screen, which would hide the
            titlebar on you. (The user can still do this if they want too, it's
-           only limiting the application.
+           only limiting the vapplication.
         */
         if (client_normal(self)) {
             if (!self->strut.right && *x + fw/10 >= a->x + a->width - 1)
@@ -1933,7 +1933,7 @@ void client_setup_decor_and_functions(ObClient *self, gboolean reconfig)
            the case any more though !
 
            but do kill the handle on fully maxed windows */
-        self->decorations &= ~(OB_FRAME_DECOR_HANDLE | OB_FRAME_DECOR_GRIPS);
+        self->decorations &= ~(OB_FRAME_DECOR_HANDLE | OB_FRAME_DECOR_GRIPS | OB_FRAME_DECOR_BORDER);
     }
 
     /* if we don't have a titlebar, then we cannot shade! */
