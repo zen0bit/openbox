@@ -300,7 +300,7 @@ RrTheme* RrThemeNew(const RrInstance *inst, const gchar *name,
                theme->menu_border_color,
                RrColorCopy(theme->frame_focused_border_color));
 
-    READ_COLOR("osd.border.color", 
+    READ_COLOR("osd.border.color",
                theme->osd_border_color,
                RrColorCopy(theme->frame_focused_border_color));
 

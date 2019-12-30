@@ -43,6 +43,8 @@
 #define FRAME_ANIMATE_ICONIFY_TIME 150000 /* .15 seconds */
 #define FRAME_ANIMATE_ICONIFY_STEP_TIME (1000 / 60) /* 60 Hz */
 
+#define SEPARATOR_WIDTH 1
+
 #define FRAME_HANDLE_Y(f) (f->size.top + f->client->area.height + f->cbwidth_b)
 
 static void flash_done(gpointer data);
@@ -241,7 +243,6 @@ void frame_show(ObFrame *self)
 {
     if (!self->visible) {
         self->visible = TRUE;
-        framerender_frame(self);
         /* Grab the server to make sure that the frame window is mapped before
            the client gets its MapNotify, i.e. to make sure the client is
            _visible_ when it gets MapNotify. */
@@ -249,6 +250,9 @@ void frame_show(ObFrame *self)
         XMapWindow(obt_display, self->client->window);
         XMapWindow(obt_display, self->window);
         grab_server(FALSE);
+        /* We draw window frame after window has been mapped to make it possible
+           grab the client pixel colors and paint chameleon decorations. */
+        framerender_frame(self);
     }
 }
 
@@ -384,9 +388,12 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
                   self->cbwidth_b +
                   (!self->max_horz || !self->max_vert ? self->bwidth : 0));
 
-        if (self->decorations & OB_FRAME_DECOR_TITLEBAR)
+        if (self->decorations & OB_FRAME_DECOR_TITLEBAR) {
             self->size.top += ob_rr_theme->title_height + self->bwidth;
-        else if (self->max_horz && self->max_vert) {
+            if (!self->client->hide_titlebar_separator) {
+              self->size.top += SEPARATOR_WIDTH;
+            }
+        } else if (self->max_horz && self->max_vert) {
             /* A maximized and undecorated window needs a border on the
                top of the window to let the user still undecorate/unmaximize the
                window via the client menu. */
@@ -549,6 +556,17 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
                     XMapWindow(obt_display, self->titlebottom);
                 } else
                     XUnmapWindow(obt_display, self->titlebottom);
+            } else if (SEPARATOR_WIDTH && !self->client->hide_titlebar_separator) {
+                if (self->decorations & OB_FRAME_DECOR_TITLEBAR) {
+                    XMoveResizeWindow(obt_display, self->titlebottom,
+                                      (self->max_horz ? 0 : self->bwidth),
+                                      ob_rr_theme->title_height + self->bwidth,
+                                      self->width,
+                                      SEPARATOR_WIDTH);
+                    XMapWindow(obt_display, self->titlebottom);
+                } else {
+                    XUnmapWindow(obt_display, self->titlebottom);
+                }
             } else {
                 XUnmapWindow(obt_display, self->titlebottom);
 
@@ -983,6 +1001,12 @@ void frame_adjust_title(ObFrame *self)
     framerender_frame(self);
 }
 
+void frame_adjust_bg_color(ObFrame *self)
+{
+    self->need_render = TRUE;
+    framerender_frame(self);
+}
+
 void frame_adjust_icon(ObFrame *self)
 {
     self->need_render = TRUE;
@@ -1162,7 +1186,7 @@ static void place_button(ObFrame *self, const char *lc, gint bwidth,
   if (!(*button_on = is_button_present(self, lc, i)))
     return;
 
-  self->label_width -= bwidth;
+  self->label_width -= bwidth * 2; // * 2 to center label
   if (i > 0)
     *button_x = *x;
   *x += i * bwidth;

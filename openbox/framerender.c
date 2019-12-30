@@ -116,10 +116,13 @@ void framerender_frame(ObFrame *self)
         XClearWindow(obt_display, self->rgripbottom);
 
         /* don't use the separator color for shaded windows */
-        if (!self->client->shaded)
-            px = (self->focused ?
-                  RrColorPixel(ob_rr_theme->title_separator_focused_color) :
-                  RrColorPixel(ob_rr_theme->title_separator_unfocused_color));
+        /* if (!self->client->shaded) */
+        /*     px = (self->focused ? */
+        /*           RrColorPixel(ob_rr_theme->title_separator_focused_color) : */
+        /*           RrColorPixel(ob_rr_theme->title_separator_unfocused_color)); */
+        if (!self->client->shaded) {
+          px = RrColorPixel(self->client->separator_color);
+        }
 
         XSetWindowBackground(obt_display, self->titlebottom, px);
         XClearWindow(obt_display, self->titlebottom);
@@ -242,6 +245,18 @@ void framerender_frame(ObFrame *self)
                    ob_rr_theme->btn_close->a_unfocused_hover :
                    ob_rr_theme->btn_close->a_unfocused_unpressed)));
         }
+
+        // Pick client colors
+        t = self->client->a_title;
+        l = self->focused ? self->client->a_label_act : self->client->a_label;
+        RrColor *fg_color = self->focused ? self->client->fg_color_act : self->client->fg_color;
+        c->surface.primary = self->client->bg_color;
+        c->texture[0].data.mask.color = fg_color;
+        i->surface.primary = self->client->bg_color;
+        i->texture[0].data.mask.color = fg_color;
+        m->surface.primary = self->client->bg_color;
+        m->texture[0].data.mask.color = fg_color;
+
         clear = ob_rr_theme->a_clear;
 
         RrPaint(t, self->title, self->width, ob_rr_theme->title_height);

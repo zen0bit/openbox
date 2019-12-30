@@ -40,6 +40,7 @@
 #include "obt/prop.h"
 
 #include <X11/Xlib.h>
+#include <X11/extensions/damagewire.h>
 #ifdef HAVE_UNISTD_H
 #  include <sys/types.h>
 #  include <unistd.h>

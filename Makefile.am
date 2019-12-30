@@ -121,6 +121,7 @@ obt_libobt_la_CPPFLAGS = \
 	$(X_CFLAGS) \
 	$(XINERAMA_CFLAGS) \
 	$(XKB_CFLAGS) \
+	$(DAMAGE_CFLAGS) \
 	$(XRANDR_CFLAGS) \
 	$(XSHAPE_CFLAGS) \
 	$(XSYNC_CFLAGS) \
@@ -136,6 +137,7 @@ obt_libobt_la_LIBADD = \
 	$(X_LIBS) \
 	$(XINERAMA_LIBS) \
 	$(XKB_LIBS) \
+	$(DAMAGE_LIBS) \
 	$(XRANDR_LIBS) \
 	$(XSHAPE_LIBS) \
 	$(XSYNC_LIBS) \
@@ -181,6 +183,7 @@ openbox_openbox_CPPFLAGS = \
 	-DG_LOG_DOMAIN=\"Openbox\"
 openbox_openbox_LDADD = \
 	$(XINERAMA_LIBS) \
+	$(DAMAGE_LIBS) \
 	$(XRANDR_LIBS) \
 	$(SM_LIBS) \
 	$(GLIB_LIBS) \

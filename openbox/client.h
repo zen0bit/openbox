@@ -29,6 +29,7 @@
 
 #include <glib.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/Xdamage.h>
 
 #ifdef HAVE_SYS_TYPES_H
 #  include <sys/types.h> /* for pid_t */
@@ -74,6 +75,8 @@ struct _ObClient
     ObWindow obwin;
     Window  window;
     gboolean managed;
+
+    Damage damage;
 
     /*! If this client is managing an ObPrompt window, then this is set to the
       prompt */
@@ -316,6 +319,20 @@ struct _ObClient
 
     /*! A boolean used for algorithms which need to mark clients as visited */
     gboolean visited;
+
+    /* A RrColor and RrAppearance used to draw the window titlebar*/
+    RrColor *bg_color;
+    RrColor *fg_color;
+    RrColor *fg_color_act;
+    RrColor *separator_color;
+    RrAppearance *a_title;
+    RrAppearance *a_label;
+    RrAppearance *a_label_act;
+
+    /*! A user option. When this is set to TRUE the client will not get the titlebar
+      decorator.
+    */
+    gboolean hide_titlebar_separator;
 };
 
 extern GList      *client_list;
@@ -634,6 +651,8 @@ void client_update_sync_request_counter(ObClient *self);
 #endif
 /*! Updates the window's colormap */
 void client_update_colormap(ObClient *self, Colormap colormap);
+/*! Updates the window's background color used for decoration painting */
+void client_update_bg_color(ObClient *self);
 /*! Updates the requested opacity for the window from the client. */
 void client_update_opacity(ObClient *self);
 /*! Updates the WMNormalHints and adjusts things if they change */

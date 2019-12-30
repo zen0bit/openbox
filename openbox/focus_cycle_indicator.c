@@ -157,11 +157,6 @@ void focus_cycle_draw_indicator(ObClient *c)
         visible = FALSE;
     }
     else if (c) {
-        /*
-          if (c)
-              frame_adjust_focus(c->frame, FALSE);
-          frame_adjust_focus(c->frame, TRUE);
-        */
         gint x, y, w, h;
         gint wt, wl, wr, wb;
         gulong ignore_start;
