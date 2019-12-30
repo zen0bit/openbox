@@ -49,4 +49,6 @@ void moveresize_end(gboolean cancel);
 
 gboolean moveresize_event(XEvent *e);
 
+void moveresize_clear_outline(void);
+
 #endif

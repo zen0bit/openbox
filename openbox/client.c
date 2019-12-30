@@ -3216,7 +3216,7 @@ void client_configure(ObClient *self, gint x, gint y, gint w, gint h,
     }
 
     /* adjust the frame */
-    if (fmoved || fresized) {
+    if (final || fmoved || fresized) {
         gulong ignore_start;
         if (!user)
             ignore_start = event_start_ignore_all_enters();

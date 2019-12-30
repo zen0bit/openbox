@@ -25,6 +25,7 @@
 #include "stacking.h"
 #include "event.h"
 #include "screen.h"
+#include "moveresize.h"
 #include "obrender/render.h"
 #include "obrender/theme.h"
 
@@ -162,6 +163,8 @@ void popup_delay_show(ObPopup *self, gulong msec, gchar *text)
     const Rect *area;
     Rect mon;
     gboolean hasicon = self->hasicon;
+
+    moveresize_clear_outline();
 
     /* when there is no icon and the text is not parent relative, then
        fill the whole dialog with the text appearance, don't use the bg at all
@@ -316,6 +319,8 @@ void popup_hide(ObPopup *self)
 {
     if (self->mapped) {
         gulong ignore_start;
+
+        moveresize_clear_outline();
 
         /* kill enter events cause by this unmapping */
         ignore_start = event_start_ignore_all_enters();
