@@ -481,7 +481,8 @@ void DestroyImlibLoader(ImlibLoader *loader)
     if (!loader)
         return;
 
-    imlib_free_image();
+    if (loader->img)
+        imlib_free_image();
     g_slice_free(ImlibLoader, loader);
 }
 
