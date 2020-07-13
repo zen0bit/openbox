@@ -185,6 +185,7 @@ openbox_openbox_LDADD = \
 	$(SM_LIBS) \
 	$(GLIB_LIBS) \
 	$(X_LIBS) \
+	$(XSYNC_LIBS) \
 	$(XCURSOR_LIBS) \
 	$(LIBSN_LIBS) \
 	$(XML_LIBS) \
