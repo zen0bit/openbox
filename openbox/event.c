@@ -2156,7 +2156,7 @@ static void focus_delay_client_dest(ObClient *client, gpointer data)
 void event_halt_focus_delay(void)
 {
     /* ignore all enter events up till the event which caused this to occur */
-    if (event_curserial) event_ignore_enter_range(1, event_curserial);
+    if (event_curserial) event_ignore_enter_range(1, event_curserial-1);
     if (focus_delay_timeout_id) g_source_remove(focus_delay_timeout_id);
     if (unfocus_delay_timeout_id) g_source_remove(unfocus_delay_timeout_id);
 }
