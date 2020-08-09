@@ -13,7 +13,7 @@ xprop -root -remove _NET_NUMBER_OF_DESKTOPS \
       -remove _NET_CURRENT_DESKTOP 2> /dev/null
 
 VER=$(gnome-session --version 2>/dev/null | \
-      sed -e 's/[^0-9.]*\([0-9.]\+\)/\1/')
+      awk '{ print $2 }')
 
 MAJOR=$(echo $VER | cut -d . -f 1)
 MINOR=$(echo $VER | cut -d . -f 2)
